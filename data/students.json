@@ -1,0 +1,59 @@
+[
+  {
+    "id": "student-001",
+    "name": "Minh",
+    "classId": "class-7a",
+    "grade": 7,
+    "persona": "Làm sai phương trình chứa phân số do thiếu kỹ năng quy đồng mẫu số.",
+    "currentLesson": {
+      "skillId": "E01",
+      "questionId": "Q_E01_001"
+    },
+    "mastery": [
+      { "skillId": "F08", "masteryScore": 0.86, "status": "mastered" },
+      { "skillId": "F11", "masteryScore": 0.35, "status": "needs_support" },
+      { "skillId": "F14", "masteryScore": 0.48, "status": "learning" },
+      { "skillId": "R02", "masteryScore": 0.62, "status": "learning" },
+      { "skillId": "E01", "masteryScore": 0.42, "status": "learning" }
+    ],
+    "groundTruthRootGapSkillId": "F11"
+  },
+  {
+    "id": "student-002",
+    "name": "Lan",
+    "classId": "class-7a",
+    "grade": 7,
+    "persona": "Nắm được quy đồng nhưng hay sai quy tắc dấu với số hữu tỉ.",
+    "currentLesson": {
+      "skillId": "E01",
+      "questionId": "Q_E01_002"
+    },
+    "mastery": [
+      { "skillId": "F08", "masteryScore": 0.84, "status": "mastered" },
+      { "skillId": "F11", "masteryScore": 0.81, "status": "mastered" },
+      { "skillId": "F14", "masteryScore": 0.78, "status": "learning" },
+      { "skillId": "R02", "masteryScore": 0.34, "status": "needs_support" },
+      { "skillId": "E01", "masteryScore": 0.46, "status": "learning" }
+    ],
+    "groundTruthRootGapSkillId": "R02"
+  },
+  {
+    "id": "student-003",
+    "name": "Nam",
+    "classId": "class-7a",
+    "grade": 7,
+    "persona": "Đã thành thạo các kỹ năng nền, lỗi sai hiện tại chủ yếu do bất cẩn.",
+    "currentLesson": {
+      "skillId": "E01",
+      "questionId": "Q_E01_001"
+    },
+    "mastery": [
+      { "skillId": "F08", "masteryScore": 0.92, "status": "mastered" },
+      { "skillId": "F11", "masteryScore": 0.9, "status": "mastered" },
+      { "skillId": "F14", "masteryScore": 0.88, "status": "mastered" },
+      { "skillId": "R02", "masteryScore": 0.86, "status": "mastered" },
+      { "skillId": "E01", "masteryScore": 0.8, "status": "mastered" }
+    ],
+    "groundTruthRootGapSkillId": null
+  }
+]

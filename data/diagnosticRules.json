@@ -1,0 +1,49 @@
+[
+  {
+    "id": "RULE-F11-ADD-DENOMINATORS",
+    "triggerErrorPattern": "ADD_DENOMINATORS",
+    "candidateSkills": [
+      { "skillId": "F11", "weight": 0.75 },
+      { "skillId": "F08", "weight": 0.25 }
+    ],
+    "recommendedDiagnosticQuestionIds": ["DQ_F08_001", "DQ_F11_002", "DQ_F11_003"],
+    "evidenceMessage": "Học sinh có dấu hiệu cộng hoặc xử lý trực tiếp mẫu số thay vì tìm mẫu số chung."
+  },
+  {
+    "id": "RULE-F08-EQUIVALENT-FRACTION",
+    "triggerErrorPattern": "EQUIVALENT_FRACTION_MISCONCEPTION",
+    "candidateSkills": [
+      { "skillId": "F08", "weight": 0.8 },
+      { "skillId": "F07", "weight": 0.2 }
+    ],
+    "recommendedDiagnosticQuestionIds": ["DQ_F08_001", "DQ_F08_002"],
+    "evidenceMessage": "Học sinh chưa chắc cách tạo phân số tương đương."
+  },
+  {
+    "id": "RULE-F14-FRACTION-ADDITION",
+    "triggerErrorPattern": "ADD_NUMERATORS_AND_DENOMINATORS",
+    "candidateSkills": [
+      { "skillId": "F14", "weight": 0.65 },
+      { "skillId": "F11", "weight": 0.35 }
+    ],
+    "recommendedDiagnosticQuestionIds": ["DQ_F11_002", "DQ_F14_001"],
+    "evidenceMessage": "Học sinh nhầm quy tắc cộng phân số khác mẫu."
+  },
+  {
+    "id": "RULE-R02-SIGN",
+    "triggerErrorPattern": "SIGN_RULE_ERROR",
+    "candidateSkills": [
+      { "skillId": "R02", "weight": 0.85 },
+      { "skillId": "F14", "weight": 0.15 }
+    ],
+    "recommendedDiagnosticQuestionIds": ["DQ_R02_001", "DQ_F14_001"],
+    "evidenceMessage": "Học sinh có dấu hiệu sai quy tắc dấu khi tính với số hữu tỉ."
+  },
+  {
+    "id": "RULE-CARELESS-FAST-RECOVERY",
+    "triggerErrorPattern": "CARELESS_FAST_ANSWER",
+    "candidateSkills": [],
+    "classification": "careless_mistake",
+    "evidenceMessage": "Nếu lịch sử đã thành thạo và học sinh trả lời đúng câu kiểm tra lại, ưu tiên phân loại lỗi bất cẩn."
+  }
+]

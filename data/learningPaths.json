@@ -1,0 +1,76 @@
+[
+  {
+    "id": "lp-001",
+    "targetSkillId": "E01",
+    "rootGapSkillId": "F11",
+    "status": "not_started",
+    "estimatedMinutes": 8,
+    "steps": [
+      {
+        "id": "step-1",
+        "order": 1,
+        "type": "micro_explanation",
+        "skillId": "F11",
+        "contentId": "EXP_F11_BASIC"
+      },
+      {
+        "id": "step-2",
+        "order": 2,
+        "type": "worked_example",
+        "skillId": "F11",
+        "contentId": "EXAMPLE_F11_001"
+      },
+      {
+        "id": "step-3",
+        "order": 3,
+        "type": "practice",
+        "skillId": "F11",
+        "questionIds": ["P_F11_001", "P_F11_002"]
+      },
+      {
+        "id": "step-4",
+        "order": 4,
+        "type": "checkpoint",
+        "skillId": "F11",
+        "questionIds": ["CP_F11_001"]
+      },
+      {
+        "id": "step-5",
+        "order": 5,
+        "type": "return_to_target",
+        "skillId": "E01",
+        "questionIds": ["Q_E01_RETRY_001"]
+      }
+    ]
+  },
+  {
+    "id": "lp-r02-001",
+    "targetSkillId": "E01",
+    "rootGapSkillId": "R02",
+    "status": "not_started",
+    "estimatedMinutes": 6,
+    "steps": [
+      {
+        "id": "step-r02-1",
+        "order": 1,
+        "type": "micro_explanation",
+        "skillId": "R02",
+        "contentId": "EXP_R02_SIGN"
+      },
+      {
+        "id": "step-r02-2",
+        "order": 2,
+        "type": "practice",
+        "skillId": "R02",
+        "questionIds": ["DQ_R02_001"]
+      },
+      {
+        "id": "step-r02-3",
+        "order": 3,
+        "type": "return_to_target",
+        "skillId": "E01",
+        "questionIds": ["Q_E01_002"]
+      }
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "EXAMPLE_F11_001",
+    "skillId": "F11",
+    "title": "Quy đồng 1/2 và 1/3",
+    "steps": [
+      "Mẫu số của hai phân số là 2 và 3.",
+      "Bội chung nhỏ nhất của 2 và 3 là 6.",
+      "Đổi 1/2 thành 3/6 vì nhân cả tử và mẫu với 3.",
+      "Đổi 1/3 thành 2/6 vì nhân cả tử và mẫu với 2.",
+      "Vậy 1/2 và 1/3 sau khi quy đồng là 3/6 và 2/6."
+    ]
+  },
+  {
+    "id": "EXAMPLE_F14_001",
+    "skillId": "F14",
+    "title": "Cộng hai phân số khác mẫu",
+    "steps": [
+      "Tính 1/2 + 1/3.",
+      "Quy đồng về mẫu số 6: 1/2 = 3/6, 1/3 = 2/6.",
+      "Cộng tử số: 3 + 2 = 5.",
+      "Giữ mẫu số chung là 6.",
+      "Kết quả là 5/6."
+    ]
+  }
+]

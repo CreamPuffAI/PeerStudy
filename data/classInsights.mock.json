@@ -1,0 +1,141 @@
+{
+  "class": {
+    "id": "class-7a",
+    "name": "Lớp 7A",
+    "studentCount": 40
+  },
+  "syncStatus": {
+    "syncedStudents": 31,
+    "offlineStudents": 9,
+    "lastUpdatedAt": "2026-07-17T10:30:00Z"
+  },
+  "summary": {
+    "studentsNeedSupport": 18,
+    "studentsOnTrack": 16,
+    "studentsReadyForAdvanced": 6,
+    "averagePreTestScore": 0.44,
+    "averagePostTestScore": 0.76
+  },
+  "commonGaps": [
+    {
+      "skillId": "F11",
+      "skillName": "Quy đồng mẫu số",
+      "grade": 5,
+      "studentCount": 12,
+      "percentage": 0.3,
+      "severity": "high",
+      "affectedSkills": ["F14", "R02", "E01"]
+    },
+    {
+      "skillId": "R02",
+      "skillName": "Quy tắc dấu với số hữu tỉ",
+      "grade": 7,
+      "studentCount": 8,
+      "percentage": 0.2,
+      "severity": "medium",
+      "affectedSkills": ["E01"]
+    },
+    {
+      "skillId": "F08",
+      "skillName": "Tạo phân số tương đương",
+      "grade": 5,
+      "studentCount": 4,
+      "percentage": 0.1,
+      "severity": "medium",
+      "affectedSkills": ["F11", "F14", "E01"]
+    }
+  ],
+  "groups": [
+    {
+      "id": "group-f11",
+      "name": "Cần củng cố quy đồng",
+      "skillId": "F11",
+      "studentCount": 12,
+      "studentIds": [
+        "student-001",
+        "student-005",
+        "student-009",
+        "student-012",
+        "student-014",
+        "student-018",
+        "student-021",
+        "student-024",
+        "student-027",
+        "student-031",
+        "student-036",
+        "student-039"
+      ],
+      "recommendedAction": "small_group_reteach"
+    },
+    {
+      "id": "group-r02",
+      "name": "Cần củng cố quy tắc dấu",
+      "skillId": "R02",
+      "studentCount": 8,
+      "studentIds": [
+        "student-002",
+        "student-006",
+        "student-010",
+        "student-016",
+        "student-020",
+        "student-026",
+        "student-033",
+        "student-038"
+      ],
+      "recommendedAction": "targeted_practice"
+    }
+  ],
+  "priorityStudents": [
+    {
+      "studentId": "student-001",
+      "studentName": "Minh",
+      "priorityScore": 0.91,
+      "priorityLevel": "high",
+      "rootGapSkillId": "F11",
+      "rootGapSkillName": "Quy đồng mẫu số",
+      "reasons": [
+        "Lỗ hổng ảnh hưởng đến ba kỹ năng phía sau",
+        "Sai lặp lại trong bốn lần làm bài",
+        "Chưa vượt qua checkpoint"
+      ]
+    },
+    {
+      "studentId": "student-002",
+      "studentName": "Lan",
+      "priorityScore": 0.78,
+      "priorityLevel": "medium",
+      "rootGapSkillId": "R02",
+      "rootGapSkillName": "Quy tắc dấu với số hữu tỉ",
+      "reasons": [
+        "Sai dấu trong các phép tính số hữu tỉ",
+        "Kỹ năng này ảnh hưởng trực tiếp đến phương trình chứa phân số"
+      ]
+    }
+  ],
+  "reteachSuggestions": [
+    {
+      "skillId": "F11",
+      "title": "Ôn lại quy đồng mẫu số",
+      "reason": "12 học sinh đang gặp cùng một lỗ hổng.",
+      "estimatedMinutes": 12,
+      "priority": 1,
+      "activities": [
+        "Nhắc lại cách tìm mẫu số chung nhỏ nhất",
+        "Thực hiện một ví dụ trực quan",
+        "Cho nhóm làm hai câu kiểm tra nhanh"
+      ]
+    },
+    {
+      "skillId": "R02",
+      "title": "Ôn quy tắc dấu với số hữu tỉ",
+      "reason": "8 học sinh sai dấu khi cộng trừ số hữu tỉ.",
+      "estimatedMinutes": 8,
+      "priority": 2,
+      "activities": [
+        "Tách phần dấu và phần giá trị tuyệt đối",
+        "Làm một ví dụ với hai phân số trái dấu",
+        "Cho nhóm làm một câu kiểm tra nhanh"
+      ]
+    }
+  ]
+}
