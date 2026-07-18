@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { GraduationCap, ArrowLeft, ArrowRight, BookOpen, Target, Trophy, Clock } from 'lucide-react'
 import type { NextAction, LearningPackage, LearningPath, Question } from '../../types/api'
 import { fetchLearningPackage } from '../../lib/api'
@@ -22,9 +22,23 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
   const [questionId, setQuestionId] = useState('Q_E01_001')
   const [diagnosisSessionId, setDiagnosisSessionId] = useState<string | null>(null)
   const [learningPathId, setLearningPathId] = useState<string | null>(null)
+  const [learningPathData, setLearningPathData] = useState<LearningPath | null>(null)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'error'; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [nextQuestionId, setNextQuestionId] = useState<string | null>(null)
+
+  const answerStartRef = useRef(Date.now())
+  const attemptCountsRef = useRef<Record<string, number>>({})
+
+  useEffect(() => {
+    answerStartRef.current = Date.now()
+  }, [questionId])
+
+  useEffect(() => {
+    if (screen === 'practice') {
+      answerStartRef.current = Date.now()
+    }
+  }, [screen])
 
   useEffect(() => {
     let cancelled = false
@@ -51,6 +65,11 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
     setFeedback(null)
 
     try {
+      const responseTimeMs = Date.now() - answerStartRef.current
+      const attemptKey = question.id
+      const currentAttempt = attemptCountsRef.current[attemptKey] ?? 0
+      attemptCountsRef.current[attemptKey] = currentAttempt + 1
+
       const response = await submitAttempt({
         eventId: crypto.randomUUID(),
         studentId,
@@ -60,8 +79,8 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
         purpose: question.purpose,
         context: {},
         answer: { type: question.type, value: answer },
-        responseTimeMs: 4200,
-        attemptNumber: 1,
+        responseTimeMs,
+        attemptNumber: currentAttempt + 1,
         deviceTimestamp: new Date().toISOString(),
         offlineCreated: !navigator.onLine
       })
@@ -90,8 +109,8 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
         setNextQuestionId(res.next.questionId)
       } else if (res.next.action === 'completed') {
         setTimeout(() => setScreen('completed'), 1200)
-      } else if (res.next.action === 'return_to_target') {
-        setNextQuestionId('Q_E01_RETRY_001')
+      } else if (res.next.action === 'return_to_target' && res.next.questionId) {
+        setNextQuestionId(res.next.questionId)
       }
     } catch {
       setFeedback({ type: 'error', message: 'Có lỗi xảy ra. Vui lòng thử lại.' })
@@ -107,9 +126,10 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
     setFeedback(null)
   }
 
-  function handleDiagnosticComplete(nextAction: NextAction, lpid?: string) {
+  function handleDiagnosticComplete(nextAction: NextAction, lpid?: string, lp?: LearningPath) {
     if (nextAction === 'start_learning_path' && lpid) {
       setLearningPathId(lpid)
+      setLearningPathData(lp ?? null)
       setScreen('learning')
     } else if (nextAction === 'continue_practice') {
       setScreen('practice')
@@ -226,6 +246,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
       {screen === 'practice' && question && (
         <Card>
           <QuestionCard
+            key={question.id}
             question={question}
             onSubmit={handleAnswer}
             feedback={feedback}
@@ -258,6 +279,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
       {screen === 'learning' && learningPathId && (
         <LearningPathWrapper
           pathId={learningPathId}
+          path={learningPathData}
           studentId={studentId}
           packageId={packageId}
           learningPackage={pkg}
@@ -280,6 +302,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
             setNextQuestionId(null)
             setDiagnosisSessionId(null)
             setLearningPathId(null)
+            setLearningPathData(null)
           }}>
             Về menu chính
           </Button>
@@ -289,18 +312,19 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
   )
 }
 
-function LearningPathWrapper({ pathId, studentId, packageId, learningPackage, onComplete }: {
+function LearningPathWrapper({ pathId, path, studentId, packageId, learningPackage, onComplete }: {
   pathId: string
+  path?: LearningPath | null
   studentId: string
   packageId: string
   learningPackage: LearningPackage
   onComplete: () => void
 }) {
-  const path = learningPackage.learningPaths?.find(p => p.id === pathId)
-  if (!path) return <Card><p>Không tìm thấy lộ trình.</p></Card>
+  const resolvedPath = path ?? learningPackage.learningPaths?.find(p => p.id === pathId)
+  if (!resolvedPath) return <Card><p>Không tìm thấy lộ trình.</p></Card>
   return (
     <LearningPathView
-      path={path}
+      path={resolvedPath}
       studentId={studentId}
       packageId={packageId}
       learningPackage={learningPackage}

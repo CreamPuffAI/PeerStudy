@@ -40,7 +40,29 @@ export async function getCachedLearningPackage(packageId: string): Promise<Learn
 }
 
 export async function submitAttempt(payload: AttemptRequest): Promise<AttemptResponse> {
-  await queueEvent(payload)
+  const syncPayload: Record<string, unknown> = {
+    questionId: payload.questionId,
+    purpose: payload.purpose,
+    answer: payload.answer,
+    responseTimeMs: payload.responseTimeMs,
+  }
+  if (payload.context.diagnosisSessionId) {
+    syncPayload.diagnosisSessionId = payload.context.diagnosisSessionId
+  }
+  if (payload.context.learningPathId) {
+    syncPayload.learningPathId = payload.context.learningPathId
+  }
+  if (payload.context.learningStepId) {
+    syncPayload.learningStepId = payload.context.learningStepId
+  }
+
+  await queueEvent(
+    payload.eventId,
+    payload.studentId,
+    'question_attempted',
+    syncPayload,
+    payload.deviceTimestamp
+  )
 
   if (!navigator.onLine) {
     throw new Error('Offline - sự kiện đã được lưu, sẽ đồng bộ khi có mạng.')

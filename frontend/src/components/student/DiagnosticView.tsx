@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Brain, ChevronRight, TrendingUp, AlertTriangle, ArrowRight } from 'lucide-react'
-import type { DiagnosisSession, AttemptResponse, NextAction } from '../../types/api'
+import type { DiagnosisSession, AttemptResponse, NextAction, LearningPath } from '../../types/api'
 import { getDiagnosisSession, submitAttempt } from '../../lib/api'
 import { QuestionCard } from './QuestionCard'
 import { Card, CardHeader } from '../ui/Card'
@@ -11,7 +11,7 @@ interface DiagnosticViewProps {
   sessionId: string
   studentId: string
   packageId: string
-  onComplete: (nextAction: NextAction, learningPathId?: string) => void
+  onComplete: (nextAction: NextAction, learningPathId?: string, learningPath?: LearningPath) => void
 }
 
 export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: DiagnosticViewProps) {
@@ -22,9 +22,16 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
   const [showNextButton, setShowNextButton] = useState(false)
   const [nextAction, setNextAction] = useState<{ action: NextAction; learningPathId?: string } | null>(null)
 
+  const answerStartRef = useRef(Date.now())
+  const attemptCountsRef = useRef<Record<string, number>>({})
+
   useEffect(() => {
     loadSession()
   }, [sessionId])
+
+  useEffect(() => {
+    answerStartRef.current = Date.now()
+  }, [session?.nextQuestion?.id])
 
   async function loadSession() {
     setLoading(true)
@@ -44,6 +51,11 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
     setShowNextButton(false)
 
     try {
+      const responseTimeMs = Date.now() - answerStartRef.current
+      const attemptKey = session.nextQuestion.id
+      const currentAttempt = attemptCountsRef.current[attemptKey] ?? 0
+      attemptCountsRef.current[attemptKey] = currentAttempt + 1
+
       const response = await submitAttempt({
         eventId: crypto.randomUUID(),
         studentId,
@@ -53,8 +65,8 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
         purpose: session.nextQuestion.purpose,
         context: { diagnosisSessionId: session.id },
         answer: { type: session.nextQuestion.type, value: answer },
-        responseTimeMs: 4200,
-        attemptNumber: 1,
+        responseTimeMs,
+        attemptNumber: currentAttempt + 1,
         deviceTimestamp: new Date().toISOString(),
         offlineCreated: !navigator.onLine
       })
@@ -88,14 +100,18 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
     if (!nextAction) return
 
     if (nextAction.action === 'continue_diagnostic') {
-      const updated = await getDiagnosisSession(sessionId)
-      setSession(updated)
-      setSubmitted(false)
-      setFeedback(null)
-      setShowNextButton(false)
-      setNextAction(null)
+      try {
+        const updated = await getDiagnosisSession(sessionId)
+        setSession(updated)
+        setSubmitted(false)
+        setFeedback(null)
+        setShowNextButton(false)
+        setNextAction(null)
+      } catch {
+        setFeedback({ type: 'error', message: 'Không thể tải câu tiếp theo. Vui lòng thử lại.' })
+      }
     } else {
-      onComplete(nextAction.action, nextAction.learningPathId)
+      onComplete(nextAction.action, nextAction.learningPathId, session?.learningPath ?? undefined)
     }
   }
 
@@ -128,16 +144,18 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
         <div className="space-y-4">
           <div className={`
             p-4 rounded-2xl border
-            ${session.diagnosis.classification === 'knowledge_gap' ? 'bg-amber-50 border-amber-100' : 'bg-blue-50 border-blue-100'}
+            ${session.diagnosis.classification === 'knowledge_gap' ? 'bg-amber-50 border-amber-100' : session.diagnosis.classification === 'careless_mistake' ? 'bg-blue-50 border-blue-100' : 'bg-slate-50 border-slate-200'}
           `}>
             <div className="flex items-center gap-2 mb-2">
               {session.diagnosis.classification === 'knowledge_gap' ? (
                 <AlertTriangle className="w-5 h-5 text-amber-600" />
-              ) : (
+              ) : session.diagnosis.classification === 'careless_mistake' ? (
                 <TrendingUp className="w-5 h-5 text-blue-600" />
+              ) : (
+                <Brain className="w-5 h-5 text-slate-600" />
               )}
               <span className="font-semibold text-slate-900">
-                {session.diagnosis.classification === 'knowledge_gap' ? 'Phát hiện lỗ hổng kiến thức' : 'Lỗi bất cẩn'}
+                {session.diagnosis.classification === 'knowledge_gap' ? 'Phát hiện lỗ hổng kiến thức' : session.diagnosis.classification === 'careless_mistake' ? 'Lỗi bất cẩn' : 'Chưa đủ bằng chứng'}
               </span>
             </div>
             {rootGap && (
@@ -160,7 +178,7 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
             </div>
           )}
 
-          <Button onClick={() => onComplete(session.next?.action ?? 'start_learning_path', session.learningPath?.id)}>
+          <Button onClick={() => onComplete(session.next?.action ?? 'start_learning_path', session.learningPath?.id, session.learningPath ?? undefined)}>
             Tiếp tục
           </Button>
         </div>
@@ -199,6 +217,7 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
       {session.nextQuestion && (
         <Card>
           <QuestionCard
+            key={session.nextQuestion.id}
             question={session.nextQuestion}
             onSubmit={handleAnswer}
             feedback={feedback}
