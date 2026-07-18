@@ -15,6 +15,16 @@ export default function App() {
   const [classInsightsError, setClassInsightsError] = useState<string | null>(null)
   const syncingRef = useRef(false)
 
+  const loadClassInsights = useCallback(async () => {
+    setClassInsightsError(null)
+    try {
+      const data = await getClassInsights('class-7a', 'math-fractions-v1')
+      setClassInsights(data)
+    } catch (err) {
+      setClassInsightsError(err instanceof Error ? err.message : 'Lỗi tải dữ liệu')
+    }
+  }, [])
+
   const syncPendingEvents = useCallback(async () => {
     if (syncingRef.current || !navigator.onLine) return
     
@@ -38,9 +48,20 @@ export default function App() {
           }))
         })
 
-        if (response.acceptedEventIds.length > 0) {
-          await markEventsSynced(response.acceptedEventIds)
+        const nonRetryableRejectedEventIds = response.rejectedEvents
+          .filter(event => !event.retryable)
+          .map(event => event.eventId)
+        const handledEventIds = [
+          ...response.acceptedEventIds,
+          ...response.duplicateEventIds,
+          ...nonRetryableRejectedEventIds,
+        ]
+
+        if (handledEventIds.length > 0) {
+          await markEventsSynced(handledEventIds)
           await clearSyncedEvents()
+          window.dispatchEvent(new Event('peerstudy:sync-complete'))
+          await loadClassInsights()
         }
       }
       
@@ -52,7 +73,7 @@ export default function App() {
       syncingRef.current = false
       setSyncing(false)
     }
-  }, [])
+  }, [loadClassInsights])
 
   useEffect(() => {
     const handleOnline = () => {
@@ -90,18 +111,8 @@ export default function App() {
   }, [])
 
   useEffect(() => {
-    let cancelled = false
-    async function load() {
-      try {
-        const data = await getClassInsights('class-7a', 'math-fractions-v1')
-        if (!cancelled) setClassInsights(data)
-      } catch (err) {
-        if (!cancelled) setClassInsightsError(err instanceof Error ? err.message : 'Lỗi tải dữ liệu')
-      }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [])
+    void loadClassInsights()
+  }, [loadClassInsights])
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
@@ -190,6 +201,13 @@ export default function App() {
             <div className="text-center py-12 text-slate-500">
               <p>Không thể tải dữ liệu lớp học.</p>
               <p className="text-sm mt-1">{classInsightsError}</p>
+              <button
+                type="button"
+                onClick={() => void loadClassInsights()}
+                className="mt-4 rounded-xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                Thử lại
+              </button>
             </div>
           ) : (
             <div className="text-center py-12 text-slate-500">Đang tải dữ liệu lớp học...</div>

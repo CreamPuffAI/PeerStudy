@@ -29,6 +29,69 @@ export interface ApiErrorResponse {
 
 export type ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse
 
+export interface AIContentConstraints {
+  questionType?: QuestionType
+  difficulty?: number
+  denominatorMax?: number
+  singleCorrectAnswer?: boolean
+  mustIncludeValidation?: boolean
+  mustIncludeErrorMappings?: boolean
+  allowedPurpose?: QuestionPurpose
+  allowedErrorPatterns?: string[]
+  maxSentences?: number
+  maxWords?: number
+}
+
+export interface GenerateDiagnosisHintRequest {
+  packageId: string
+  diagnosisSessionId: string
+  style?: string
+  constraints?: Pick<AIContentConstraints, 'maxSentences' | 'maxWords'>
+}
+
+export interface GenerateDiagnosisHintResponse {
+  id: string
+  skillId: string
+  sourceContentId: string
+  style: string
+  message: string
+  generated: boolean
+  fallbackUsed: boolean
+}
+
+export interface RewriteExplanationRequest {
+  packageId: string
+  skillId: string
+  contentId: string
+  style?: string
+  constraints?: AIContentConstraints
+}
+
+export interface RewriteExplanationResponse {
+  id: string
+  skillId: string
+  sourceContentId: string
+  style: string
+  content: string
+  generated: boolean
+  fallbackUsed: boolean
+}
+
+export interface GenerateQuestionVariantRequest {
+  packageId: string
+  skillId: string
+  questionId: string
+  style?: string
+  constraints?: AIContentConstraints
+}
+
+export interface GenerateQuestionVariantResponse extends Question {
+  sourceQuestionId: string
+  style: string
+  generated: boolean
+  fallbackUsed: boolean
+}
+
 export interface Skill {
   id: string
   name: string

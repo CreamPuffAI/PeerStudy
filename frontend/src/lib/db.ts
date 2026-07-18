@@ -1,8 +1,10 @@
 import Dexie, { type Table } from 'dexie'
 import type {
+  AttemptRequest,
   LearningPackage,
   DiagnosisSession,
   LearningPath,
+  SyncEvent,
   Student
 } from '../types/api'
 
@@ -102,20 +104,23 @@ export async function getDatabase(): Promise<PeerStudyDB> {
   return getDB()
 }
 
-export async function queueEvent(
-  eventId: string,
-  studentId: string,
-  type: string,
-  payload: unknown,
-  createdAt: string | number
-) {
+export async function queueEvent(event: AttemptRequest | SyncEvent) {
   const db = await getDB()
+  const payload = 'payload' in event ? event.payload : event
+  const type = 'type' in event ? event.type : 'question_attempted'
+  const eventId = 'eventId' in event ? event.eventId : crypto.randomUUID()
+  const studentId = 'studentId' in event ? event.studentId : 'unknown'
+  const timestamp = 'createdAt' in event ? event.createdAt : event.deviceTimestamp
+
+  const existing = await db.events.where('eventId').equals(eventId).first()
+  if (existing) return
+
   await db.events.add({
     eventId,
     studentId,
     type,
     payload: JSON.stringify(payload),
-    createdAt: typeof createdAt === 'string' ? new Date(createdAt).getTime() : createdAt,
+    createdAt: new Date(timestamp).getTime(),
     synced: false
   })
 }

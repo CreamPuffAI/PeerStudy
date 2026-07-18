@@ -702,6 +702,75 @@ def test_sync_applies_valid_event_once_and_reports_duplicate(
     assert main.mastery_state["student-001"]["E01"]["masteryScore"] == 0.34
 
 
+def test_online_and_offline_paths_share_attempt_idempotency(client: TestClient) -> None:
+    event_id = "cross-path-idempotency"
+    online_payload = attempt_payload(event_id=event_id, answer_value="B")
+    first = client.post("/api/v1/attempts", json=online_payload)
+    assert first.status_code == 200
+    mastery_after_online = main.mastery_state["student-001"]["E01"]["masteryScore"]
+
+    sync = client.post(
+        "/api/v1/sync",
+        json={
+            "deviceId": "device-cross-path",
+            "studentId": "student-001",
+            "packageId": "math-fractions-v1",
+            "packageVersion": 3,
+            "events": [
+                {
+                    "eventId": event_id,
+                    "type": "question_attempted",
+                    "createdAt": online_payload["deviceTimestamp"],
+                    "payload": {
+                        "questionId": "Q_E01_001",
+                        "purpose": "target",
+                        "answer": {"type": "multiple_choice", "value": "B"},
+                        "responseTimeMs": 4200,
+                    },
+                }
+            ],
+        },
+    )
+
+    assert sync.status_code == 200
+    assert sync.json()["data"]["duplicateEventIds"] == [event_id]
+    assert main.mastery_state["student-001"]["E01"]["masteryScore"] == mastery_after_online
+
+
+def test_offline_then_online_attempt_is_not_applied_twice(client: TestClient) -> None:
+    event_id = "offline-then-online-idempotency"
+    sync = client.post(
+        "/api/v1/sync",
+        json={
+            "deviceId": "device-cross-path",
+            "studentId": "student-001",
+            "packageId": "math-fractions-v1",
+            "packageVersion": 3,
+            "events": [
+                {
+                    "eventId": event_id,
+                    "type": "question_attempted",
+                    "createdAt": "2026-07-17T10:15:24Z",
+                    "payload": {
+                        "questionId": "Q_E01_001",
+                        "purpose": "target",
+                        "answer": {"type": "multiple_choice", "value": "B"},
+                        "responseTimeMs": 4200,
+                    },
+                }
+            ],
+        },
+    )
+    assert sync.status_code == 200
+    mastery_after_sync = main.mastery_state["student-001"]["E01"]["masteryScore"]
+
+    online = client.post(
+        "/api/v1/attempts",
+        json=attempt_payload(event_id=event_id, answer_value="B"),
+    )
+    assert online.status_code == 200
+    assert main.mastery_state["student-001"]["E01"]["masteryScore"] == mastery_after_sync
+
 def test_sync_rejects_invalid_event_without_updating_state(client: TestClient) -> None:
     payload = {
         "deviceId": "device-001",

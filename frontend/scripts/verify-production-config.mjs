@@ -20,5 +20,12 @@ if (!bundle.includes('/api/v1')) {
   throw new Error('Production bundle does not contain the expected API path.')
 }
 
+for (const forbidden of ['FPT_AI_API_KEY', 'FPT_AI_MODEL', 'mkp-api.fptcloud.com', 'chat/completions']) {
+  if (bundle.includes(forbidden)) {
+    throw new Error(`Production bundle contains backend-only AI configuration: ${forbidden}`)
+  }
+}
+
 console.log('Production API configuration: OK')
+console.log('Production AI secret boundary: OK')
 

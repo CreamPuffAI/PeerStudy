@@ -5,6 +5,12 @@ services:
     restart: unless-stopped
     expose:
       - "8000"
+    environment:
+      FPT_AI_API_KEY: ${FPT_AI_API_KEY:-}
+      FPT_AI_MODEL: ${FPT_AI_MODEL:-}
+      FPT_AI_BASE_URL: ${FPT_AI_BASE_URL:-https://mkp-api.fptcloud.com/chat/completions}
+      FPT_AI_STREAM: ${FPT_AI_STREAM:-true}
+      FPT_AI_TIMEOUT_SECONDS: ${FPT_AI_TIMEOUT_SECONDS:-8}
     labels:
       com.centurylinklabs.watchtower.enable: "true"
     healthcheck:

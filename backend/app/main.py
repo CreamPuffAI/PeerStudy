@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import os
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
@@ -10,9 +11,18 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from .ai_content_service import (
+    AIContentError,
+    AIContentService,
+    ContentConstraints,
+    GenerateHintFromDiagnosisRequest,
+    GenerateQuestionVariantRequest,
+    RewriteExplanationRequest,
+)
 from .data_loader import load_json_file, load_runtime_data
+from .fpt_ai_client import FPTAIClient
 from .models import ApiErrorResponse, ApiSuccess, UtcTimestamp
 
 
@@ -66,6 +76,23 @@ learning_paths_by_gap = {
 }
 learning_paths_by_id = {path["id"]: path for path in learning_paths}
 students_by_id = {student["id"]: student for student in students}
+
+
+def _ai_timeout_seconds() -> float:
+    try:
+        value = float(os.getenv("FPT_AI_TIMEOUT_SECONDS", "8"))
+    except ValueError:
+        return 8.0
+    return value if value > 0 else 8.0
+
+
+fpt_ai_client = FPTAIClient.from_env()
+ai_content_service = AIContentService(
+    runtime_data["learning_package"],
+    client=fpt_ai_client,
+    api_key=os.getenv("FPT_AI_API_KEY", ""),
+    timeout_seconds=_ai_timeout_seconds(),
+)
 
 
 def _initial_mastery() -> dict[str, dict[str, dict[str, Any]]]:
@@ -157,6 +184,35 @@ class SyncRequest(BaseModel):
     packageId: str
     packageVersion: int
     events: list[SyncEvent]
+
+
+class AIRequestModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+
+class RewriteExplanationApiRequest(AIRequestModel):
+    packageId: str
+    skillId: str
+    contentId: str
+    style: str = Field(default="short", min_length=1, max_length=32)
+    constraints: ContentConstraints = Field(default_factory=ContentConstraints)
+
+
+class GenerateQuestionVariantApiRequest(AIRequestModel):
+    packageId: str
+    skillId: str
+    questionId: str
+    style: str = Field(default="step_by_step", min_length=1, max_length=32)
+    constraints: ContentConstraints = Field(default_factory=ContentConstraints)
+
+
+class GenerateDiagnosisHintApiRequest(AIRequestModel):
+    packageId: str
+    diagnosisSessionId: str
+    style: str = Field(default="short", min_length=1, max_length=32)
+    constraints: ContentConstraints = Field(
+        default_factory=lambda: ContentConstraints(maxSentences=2)
+    )
 
 
 def success_response(data: Any, meta: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -1016,7 +1072,10 @@ async def get_learning_package(package_id: str) -> dict[str, Any]:
 @app.post("/api/v1/attempts")
 async def submit_attempt(request: AttemptRequest) -> dict[str, Any]:
     if request.eventId in attempts_by_event_id:
-        if attempt_event_snapshots.get(request.eventId) != request.model_dump(mode="json"):
+        if not _same_attempt_event(
+            attempt_event_snapshots.get(request.eventId),
+            request.model_dump(mode="json"),
+        ):
             raise ApiError(
                 "INVALID_REQUEST",
                 "eventId đã được sử dụng cho payload khác.",
@@ -1071,6 +1130,95 @@ async def get_diagnosis_session(diagnosis_session_id: str) -> dict[str, Any]:
             "nextQuestion": _get_next_diagnostic_question(session),
         }
     )
+
+
+@app.post("/api/v1/ai/rewrite-explanation")
+async def rewrite_explanation_with_ai(
+    payload: RewriteExplanationApiRequest,
+) -> dict[str, Any]:
+    _require_package(payload.packageId)
+    try:
+        source = ai_content_service.verified_explanation(payload.contentId)
+        result = ai_content_service.rewrite_explanation(
+            RewriteExplanationRequest(
+                skillId=payload.skillId,
+                sourceContent=source,
+                style=payload.style,
+                constraints=payload.constraints,
+            )
+        )
+    except (AIContentError, ValueError) as exc:
+        raise ApiError("AI_CONTENT_ERROR", str(exc), 422) from exc
+    return success_response(result.model_dump(mode="json"))
+
+
+@app.post("/api/v1/ai/generate-question-variant")
+async def generate_question_variant_with_ai(
+    payload: GenerateQuestionVariantApiRequest,
+) -> dict[str, Any]:
+    _require_package(payload.packageId)
+    try:
+        source = ai_content_service.verified_question(payload.questionId)
+        result = ai_content_service.generate_question_variant(
+            GenerateQuestionVariantRequest(
+                skillId=payload.skillId,
+                sourceContent=source,
+                style=payload.style,
+                constraints=payload.constraints,
+            )
+        )
+    except (AIContentError, ValueError) as exc:
+        raise ApiError("AI_CONTENT_ERROR", str(exc), 422) from exc
+    return success_response(result.model_dump(mode="json"))
+
+
+@app.post("/api/v1/ai/generate-diagnosis-hint")
+async def generate_diagnosis_hint_with_ai(
+    payload: GenerateDiagnosisHintApiRequest,
+) -> dict[str, Any]:
+    _require_package(payload.packageId)
+    session = diagnosis_sessions.get(payload.diagnosisSessionId)
+    if session is None:
+        raise ApiError("SESSION_NOT_FOUND", "Không tìm thấy phiên chẩn đoán.", 404)
+    if session["status"] != "completed":
+        raise ApiError(
+            "AI_HINT_NOT_READY",
+            "Phiên chẩn đoán chưa hoàn tất.",
+            409,
+            {"diagnosisSessionId": payload.diagnosisSessionId},
+        )
+
+    diagnosis = session.get("diagnosis") or {}
+    root_gap = diagnosis.get("rootGap")
+    if not isinstance(root_gap, dict) or not root_gap.get("skillId"):
+        raise ApiError(
+            "AI_HINT_NOT_AVAILABLE",
+            "Phiên chẩn đoán không có lỗ hổng kiến thức để tạo gợi ý.",
+            409,
+            {"diagnosisSessionId": payload.diagnosisSessionId},
+        )
+
+    skill_id = str(root_gap["skillId"])
+    try:
+        source = ai_content_service.verified_diagnosis(
+            payload.diagnosisSessionId,
+            skill_id=skill_id,
+            confidence=float(diagnosis["confidence"]),
+            evidence=diagnosis["evidence"],
+            root_gap_skill_id=skill_id,
+            last_error_pattern=session.get("triggerErrorPattern"),
+        )
+        result = ai_content_service.generate_hint_from_diagnosis(
+            GenerateHintFromDiagnosisRequest(
+                skillId=skill_id,
+                sourceContent=source,
+                style=payload.style,
+                constraints=payload.constraints,
+            )
+        )
+    except (AIContentError, ValueError, KeyError, TypeError) as exc:
+        raise ApiError("AI_CONTENT_ERROR", str(exc), 422) from exc
+    return success_response(result.model_dump(mode="json"))
 
 
 def _runtime_student_ids(class_id: str) -> set[str]:
@@ -1436,6 +1584,25 @@ def _sync_attempt_request(
     )
 
 
+def _attempt_snapshot_for_idempotency(snapshot: dict[str, Any]) -> dict[str, Any]:
+    """Ignore only transport provenance when comparing one event across paths."""
+
+    return {
+        key: value for key, value in snapshot.items() if key != "offlineCreated"
+    }
+
+
+def _same_attempt_event(
+    previous_snapshot: dict[str, Any] | None,
+    incoming_snapshot: dict[str, Any],
+) -> bool:
+    if previous_snapshot is None:
+        return False
+    return _attempt_snapshot_for_idempotency(
+        previous_snapshot
+    ) == _attempt_snapshot_for_idempotency(incoming_snapshot)
+
+
 def _validate_sync_learning_event(
     event: SyncEvent, student_id: str
 ) -> None:
@@ -1565,6 +1732,32 @@ async def sync(payload: SyncRequest) -> dict[str, Any]:
         )
 
     for event in payload.events:
+        if event.type == "question_attempted" and event.eventId in attempts_by_event_id:
+            try:
+                incoming_attempt = _sync_attempt_request(
+                    event, payload.studentId, payload.packageId
+                )
+            except (ValidationError, KeyError, TypeError):
+                rejected_events.append(
+                    _reject_event(event, "INVALID_EVENT", "Payload event không hợp lệ.")
+                )
+                continue
+
+            if _same_attempt_event(
+                attempt_event_snapshots.get(event.eventId),
+                incoming_attempt.model_dump(mode="json"),
+            ):
+                duplicate_event_ids.append(event.eventId)
+            else:
+                rejected_events.append(
+                    _reject_event(
+                        event,
+                        "INVALID_EVENT",
+                        "eventId đã được sử dụng cho payload khác.",
+                    )
+                )
+            continue
+
         if event.eventId in sync_event_ids:
             previous = sync_event_state.get(event.eventId, {})
             if previous.get("event") == event.model_dump(mode="json"):
@@ -1586,6 +1779,7 @@ async def sync(payload: SyncRequest) -> dict[str, Any]:
 
         try:
             attempt_response = None
+            attempt_request = None
             if event.type == "question_attempted":
                 attempt_request = _sync_attempt_request(
                     event, payload.studentId, payload.packageId
@@ -1597,6 +1791,11 @@ async def sync(payload: SyncRequest) -> dict[str, Any]:
                 attempt_response,
                 event.model_dump(mode="json"),
             )
+            if attempt_request is not None and attempt_response is not None:
+                attempts_by_event_id[event.eventId] = _copy(attempt_response)
+                attempt_event_snapshots[event.eventId] = attempt_request.model_dump(
+                    mode="json"
+                )
             _record_runtime_event(
                 event_id=event.eventId,
                 student_id=payload.studentId,

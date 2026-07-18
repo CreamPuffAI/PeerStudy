@@ -1,0 +1,740 @@
+VỀ API:
+*Base url: /api/v1
+*Format Response thành công:
+{
+  "success": true,
+  "data": {},
+  "meta": {}
+}
+Ghi chú: meta là optional, không bắt buộc trả về trong mọi response.
+
+*Format Response lỗi:
+{
+  "success": false,
+  "error": {
+    "code": "QUESTION_NOT_FOUND",
+    "message": "Không tìm thấy câu hỏi",
+    "details": {}
+  }
+}
+
+*Lấy 2 dạng câu hỏi:
+type QuestionType =
+  | "multiple_choice"
+  | "numeric";
+*Mục đích câu hỏi:
+type QuestionPurpose =
+  | "target"
+  | "diagnostic"
+  | "practice"
+  | "checkpoint";
+*Trạng thái kĩ năng:
+type MasteryStatus =
+  | "unknown"
+  | "learning"
+  | "needs_support"
+  | "mastered";
+*Các bước học tập:
+type LearningStepType =
+  | "micro_explanation"
+  | "worked_example"
+  | "practice"
+  | "checkpoint"
+  | "return_to_target";
+*Các hành động tiếp theo:
+type NextAction =
+  | "continue_diagnostic"
+  | "start_learning_path"
+  | "continue_practice"
+  | "return_to_target"
+  | "completed";
+type DiagnosisStatus =
+  | "in_progress"
+  | "completed"
+  | "cancelled";
+
+type DiagnosisClassification =
+  | "knowledge_gap"
+  | "careless_mistake"
+  | "insufficient_evidence";
+
+type LearningPathStatus =
+  | "not_started"
+  | "in_progress"
+  | "completed";
+
+type FeedbackType =
+  | "success"
+  | "neutral"
+  | "warning"
+  | "error";
+
+type Severity =
+  | "low"
+  | "medium"
+  | "high";
+
+type PriorityLevel =
+  | "low"
+  | "medium"
+  | "high";
+
+type SyncEventType =
+  | "question_attempted"
+  | "learning_step_completed"
+  | "checkpoint_completed"
+  | "learning_path_completed";
+
+type SyncRejectCode =
+  | "INVALID_EVENT"
+  | "QUESTION_NOT_FOUND"
+  | "PACKAGE_VERSION_MISMATCH"
+  | "SESSION_NOT_FOUND"
+  | "STUDENT_NOT_FOUND";
+
+Quy ước chung:
+- ID luôn là string.
+- Timestamp dùng ISO 8601 UTC.
+- masteryScore, confidence, suspicionScore, percentage nằm trong khoảng 0-1.
+- eventId là idempotency key. Cùng một eventId gửi lại nhiều lần thì server chỉ xử lý một lần.
+- questionId là nguồn sự thật cho purpose và answer.type. Nếu request gửi sai purpose hoặc answer.type thì backend trả lỗi validation.
+- Mọi contentId và questionId xuất hiện trong learningPath phải tồn tại trong learning package tương ứng.
+- Frontend điều hướng theo next.action, không tự suy luận workflow.
+- Sau khi freeze contract, không đổi tên hoặc xóa field; chỉ thêm field optional.
+
+Endpoint 1 — Lấy gói dữ liệu học tập
+Endpoint này phục vụ cả online và offline.
+GET /api/v1/learning-packages/{packageId}
+Ví dụ:
+GET /api/v1/learning-packages/math-fractions-v1
+Response
+{
+  "success": true,
+  "data": {
+    "packageId": "math-fractions-v1",
+    "version": 3,
+    "name": "Phân số và phương trình chứa phân số",
+    "updatedAt": "2026-07-17T10:00:00Z",
+    "skills": [
+      {
+        "id": "F08",
+        "name": "Phân số tương đương",
+        "grade": 5,
+        "domain": "fractions",
+        "prerequisiteIds": ["F07"],
+        "masteryThreshold": 0.8
+      },
+      {
+        "id": "F11",
+        "name": "Quy đồng mẫu số",
+        "grade": 5,
+        "domain": "fractions",
+        "prerequisiteIds": ["F08"],
+        "masteryThreshold": 0.8
+      }
+    ],
+    "questions": [
+		{
+		  "id": "DQ_F11_002",
+		  "skillId": "F11",
+		  "purpose": "diagnostic",
+		  "type": "multiple_choice",
+		  "difficulty": 1,
+		  "prompt": "Mẫu số chung nhỏ nhất của 4 và 6 là bao nhiêu?",
+		  "options": [
+			{
+			  "id": "A",
+			  "text": "8"
+			},
+			{
+			  "id": "B",
+			  "text": "10"
+			},
+			{
+			  "id": "C",
+			  "text": "12"
+			},
+			{
+			  "id": "D",
+			  "text": "24"
+			}
+		  ],
+		  "validation": {
+			"correctAnswer": "C"
+		  },
+		  "errorMappings": {
+			"A": "INCOMPLETE_MULTIPLE",
+			"B": "ADD_DENOMINATORS",
+			"D": "USES_PRODUCT_INSTEAD_OF_LCM"
+		  }
+		}
+    ],
+    "explanations": [
+      {
+        "id": "EXP_F11_BASIC",
+        "skillId": "F11",
+        "style": "step_by_step",
+        "content": "Muốn cộng hai phân số khác mẫu, trước hết cần đưa chúng về cùng mẫu số."
+      }
+    ],
+    "diagnosticRulesVersion": 2,
+    "diagnosticRules": [
+      {
+        "id": "RULE-F11-01",
+        "triggerErrorPattern": "ADD_DENOMINATORS",
+        "candidateSkills": [
+          {
+            "skillId": "F11",
+            "weight": 0.75
+          },
+          {
+            "skillId": "F08",
+            "weight": 0.25
+          }
+        ]
+      }
+    ]
+  }
+}
+Voi cau Numeric:
+{
+  "type": "numeric",
+  "validation": {
+    "correctAnswer": "0.5",
+    "acceptedAnswers": [
+      "0.5",
+      "1/2"
+    ],
+    "tolerance": 0.0001
+  }
+}
+
+
+Endpoint 2 — Nộp một câu trả lời
+Đây là endpoint trung tâm.
+POST /api/v1/attempts
+Request
+{
+  "eventId": "evt-0d61af32",
+  "studentId": "student-001",
+  "classId": "class-7a",
+  "packageId": "math-fractions-v1",
+  "questionId": "DQ_F11_002",
+  "purpose": "diagnostic",
+
+  "context": {
+    "diagnosisSessionId": "diag-001",
+    "learningPathId": null,
+    "learningStepId": null
+  },
+
+  "answer": {
+    "type": "multiple_choice",
+    "value": "C"
+  },
+  "responseTimeMs": 4200,
+  "attemptNumber": 1,
+  "deviceTimestamp": "2026-07-17T10:15:24Z",
+  "offlineCreated": false
+}
+Response khi trả lời đúng
+{
+  "success": true,
+  "data": {
+	  "attemptId": "attempt-9321",
+	  "correct": true,
+	  "skillUpdate": {
+		"skillId": "F11",
+		"previousMastery": 0.42,
+		"currentMastery": 0.55,
+		"status": "learning"
+	  },
+	  "next": {
+		"action": "continue_diagnostic",
+		"questionId": "DQ_F11_003",
+		"diagnosisSessionId": "diag-001"
+	  },
+	  "feedback": {
+		"type": "success",
+		"message": "Em đã xác định đúng mẫu số chung."
+	  }
+  }
+}
+Response khi sai và cần chẩn đoán
+{
+  "success": true,
+  "data": {
+    "attemptId": "attempt-9322",
+    "correct": false,
+    "detectedErrorPattern": {
+      "code": "ADD_DENOMINATORS",
+      "label": "Cộng trực tiếp hai mẫu số",
+      "confidence": 0.78
+    },
+    "candidateSkills": [
+      {
+        "skillId": "F11",
+        "name": "Quy đồng mẫu số",
+        "suspicionScore": 0.72
+      },
+      {
+        "skillId": "F08",
+        "name": "Phân số tương đương",
+        "suspicionScore": 0.45
+      }
+    ],
+    "diagnosisSession": {
+      "id": "diag-001",
+      "status": "in_progress",
+      "answeredCount": 0,
+      "maxQuestions": 4
+    },
+    "next": {
+      "action": "continue_diagnostic",
+      "questionId": "DQ_F08_001",
+      "diagnosisSessionId": "diag-001"
+    },
+    "feedback": {
+      "type": "neutral",
+      "message": "Hãy trả lời một vài câu ngắn để hệ thống tìm phần kiến thức em cần củng cố."
+    }
+  }
+}
+
+Endpoint 3 — Lấy trạng thái phiên chẩn đoán
+Có thể gộp vào endpoint attempts, nhưng nên có một endpoint đọc trạng thái để refresh trang không mất dữ liệu.
+GET /api/v1/diagnosis-sessions/{diagnosisSessionId}
+Response khi đang chẩn đoán
+{
+  "success": true,
+  "data": {
+    "id": "diag-001",
+    "studentId": "student-001",
+    "triggerQuestionId": "Q_E01_001",
+    "triggerSkillId": "E01",
+    "status": "in_progress",
+    "answeredCount": 2,
+    "maxQuestions": 4,
+    "candidates": [
+      {
+        "skillId": "F11",
+        "name": "Quy đồng mẫu số",
+        "score": 0.77
+      },
+      {
+        "skillId": "F08",
+        "name": "Phân số tương đương",
+        "score": 0.31
+      }
+    ],
+    "nextQuestion": {
+      "id": "DQ_F11_002",
+      "skillId": "F11",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "prompt": "Mẫu số chung nhỏ nhất của 4 và 6 là bao nhiêu?",
+      "options": [
+        {
+          "id": "A",
+          "text": "8"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        },
+        {
+          "id": "C",
+          "text": "12"
+        },
+        {
+          "id": "D",
+          "text": "24"
+        }
+      ]
+    }
+  }
+}
+Response khi hoàn tất chẩn đoán
+{
+  "success": true,
+  "data": {
+    "id": "diag-001",
+    "status": "completed",
+    "diagnosis": {
+      "rootGap": {
+        "skillId": "F11",
+        "name": "Quy đồng mẫu số",
+        "grade": 5
+      },
+      "confidence": 0.87,
+      "classification": "knowledge_gap",
+      "evidence": [
+        {
+          "type": "correct_diagnostic_answer",
+          "skillId": "F08",
+          "message": "Học sinh nhận biết đúng phân số tương đương."
+        },
+        {
+          "type": "incorrect_diagnostic_answer",
+          "skillId": "F11",
+          "message": "Học sinh tìm sai mẫu số chung."
+        },
+        {
+          "type": "repeated_error_pattern",
+          "message": "Lỗi quy đồng xuất hiện trong hai câu liên tiếp."
+        }
+      ]
+    },
+    "learningPath": {
+      "id": "lp-001",
+      "targetSkillId": "E01",
+      "rootGapSkillId": "F11",
+      "status": "not_started",
+      "estimatedMinutes": 8,
+      "steps": [
+        {
+          "id": "step-1",
+          "order": 1,
+          "type": "micro_explanation",
+          "skillId": "F11",
+          "contentId": "EXP_F11_BASIC"
+        },
+        {
+          "id": "step-2",
+          "order": 2,
+          "type": "worked_example",
+          "skillId": "F11",
+          "contentId": "EXAMPLE_F11_001"
+        },
+        {
+          "id": "step-3",
+          "order": 3,
+          "type": "practice",
+          "skillId": "F11",
+          "questionIds": ["P_F11_001", "P_F11_002"]
+        },
+        {
+          "id": "step-4",
+          "order": 4,
+          "type": "checkpoint",
+          "skillId": "F11",
+          "questionIds": ["CP_F11_001"]
+        },
+        {
+          "id": "step-5",
+          "order": 5,
+          "type": "return_to_target",
+          "skillId": "E01",
+          "questionIds": ["Q_E01_RETRY_001"]
+        }
+      ]
+    },
+    "next": {
+      "action": "start_learning_path",
+      "learningPathId": "lp-001"
+    }
+  }
+}
+Trường hợp lỗi bất cẩn
+{
+  "success": true,
+  "data": {
+    "id": "diag-002",
+    "status": "completed",
+    "diagnosis": {
+      "rootGap": null,
+      "confidence": 0.81,
+      "classification": "careless_mistake",
+      "evidence": [
+        {
+          "type": "historical_mastery",
+          "message": "Học sinh đã trả lời đúng 8/9 câu cùng kỹ năng."
+        },
+        {
+          "type": "diagnostic_recovery",
+          "message": "Học sinh trả lời đúng các câu kiểm tra lại."
+        }
+      ]
+    },
+    "learningPath": null,
+    "next": {
+      "action": "continue_practice",
+      "questionId": "Q_E01_002"
+    }
+  }
+}
+
+Endpoint 4 — Dashboard giáo viên
+GET /api/v1/classes/{classId}/insights
+Query optional:
+GET /api/v1/classes/class-7a/insights?packageId=math-fractions-v1
+Response
+{
+  "success": true,
+  "data": {
+    "class": {
+      "id": "class-7a",
+      "name": "Lớp 7A",
+      "studentCount": 40
+    },
+    "syncStatus": {
+      "syncedStudents": 31,
+      "offlineStudents": 9,
+      "lastUpdatedAt": "2026-07-17T10:30:00Z"
+    },
+    "summary": {
+      "studentsNeedSupport": 18,
+      "studentsOnTrack": 16,
+      "studentsReadyForAdvanced": 6,
+      "averagePreTestScore": 0.44,
+      "averagePostTestScore": 0.76
+    },
+    "commonGaps": [
+      {
+        "skillId": "F11",
+        "skillName": "Quy đồng mẫu số",
+        "grade": 5,
+        "studentCount": 12,
+        "percentage": 0.3,
+        "severity": "high",
+        "affectedSkills": ["F14", "R02", "E01"]
+      },
+      {
+        "skillId": "R02",
+        "skillName": "Quy tắc dấu với số hữu tỉ",
+        "grade": 7,
+        "studentCount": 8,
+        "percentage": 0.2,
+        "severity": "medium",
+        "affectedSkills": ["E01"]
+      }
+    ],
+    "groups": [
+      {
+        "id": "group-f11",
+        "name": "Cần củng cố quy đồng",
+        "skillId": "F11",
+        "studentCount": 12,
+        "studentIds": [
+          "student-001",
+          "student-005",
+          "student-009",
+          "student-012",
+          "student-014",
+          "student-018",
+          "student-021",
+          "student-024",
+          "student-027",
+          "student-031",
+          "student-036",
+          "student-039"
+        ],
+        "recommendedAction": "small_group_reteach"
+      }
+    ],
+    "priorityStudents": [
+      {
+        "studentId": "student-001",
+        "studentName": "Minh",
+        "priorityScore": 0.91,
+        "priorityLevel": "high",
+        "rootGapSkillId": "F11",
+        "rootGapSkillName": "Quy đồng mẫu số",
+        "reasons": [
+          "Lỗ hổng ảnh hưởng đến ba kỹ năng phía sau",
+          "Sai lặp lại trong bốn lần làm bài",
+          "Chưa vượt qua checkpoint"
+        ]
+      }
+    ],
+    "reteachSuggestions": [
+      {
+        "skillId": "F11",
+        "title": "Ôn lại quy đồng mẫu số",
+        "reason": "12 học sinh đang gặp cùng một lỗ hổng.",
+        "estimatedMinutes": 12,
+        "priority": 1,
+        "activities": [
+          "Nhắc lại cách tìm mẫu số chung nhỏ nhất",
+          "Thực hiện một ví dụ trực quan",
+          "Cho nhóm làm hai câu kiểm tra nhanh"
+        ]
+      }
+    ]
+  }
+}
+
+Endpoint 5 — Đồng bộ offline
+POST /api/v1/sync
+Request tối thiểu
+{
+  "deviceId": "device-001",
+  "studentId": "student-001",
+  "packageId": "math-fractions-v1",
+  "packageVersion": 3,
+  "events": [
+    {
+      "eventId": "evt-001",
+      "type": "question_attempted",
+      "createdAt": "2026-07-17T10:15:24Z",
+      "payload": {
+        "questionId": "DQ_F11_002",
+        "purpose": "diagnostic",
+        "diagnosisSessionId": "diag-001",
+        "answer": {
+          "type": "multiple_choice",
+          "value": "C"
+        },
+        "responseTimeMs": 4200
+      }
+    },
+    {
+      "eventId": "evt-002",
+      "type": "learning_step_completed",
+      "createdAt": "2026-07-17T10:18:00Z",
+      "payload": {
+        "learningPathId": "lp-001",
+        "learningStepId": "step-1"
+      }
+    }
+  ]
+}
+Response
+{
+  "success": true,
+  "data": {
+    "acceptedEventIds": [
+      "evt-001",
+      "evt-002"
+    ],
+    "duplicateEventIds": [],
+    "rejectedEvents": [],
+    "serverTimestamp": "2026-07-17T10:31:00Z"
+  }
+}
+
+Cấu trúc rejectedEvents nếu có event bị từ chối:
+{
+  "eventId": "evt-003",
+  "code": "PACKAGE_VERSION_MISMATCH",
+  "message": "Package version trên thiết bị đã cũ.",
+  "retryable": false
+}
+
+Quy ước AI:
+- AI chỉ tạo hoặc diễn giải content. AI không quyết định rootGap, mastery hoặc sửa knowledge graph.
+- Backend tự lấy source đã được xác thực từ learning package/diagnostic session; client không gửi source text tùy ý.
+- generated=true nghĩa là output từ provider đã vượt qua validator; fallbackUsed=true nghĩa là backend dùng content deterministic.
+- Provider timeout, lỗi mạng, output sai JSON hoặc sai constraints phải chuyển sang fallback nếu có.
+- API key của provider chỉ nằm trong biến môi trường backend, không xuất hiện trong request/response.
+
+Endpoint 6 — Viết lại giải thích bằng AI
+POST /api/v1/ai/rewrite-explanation
+Request
+{
+  "packageId": "math-fractions-v1",
+  "skillId": "F11",
+  "contentId": "EXP_F11_BASIC",
+  "style": "short",
+  "constraints": {
+    "maxSentences": 2,
+    "maxWords": 40
+  }
+}
+Response
+{
+  "success": true,
+  "data": {
+    "id": "EXP_F11_BASIC__short",
+    "skillId": "F11",
+    "sourceContentId": "EXP_F11_BASIC",
+    "style": "short",
+    "content": "Trước tiên hãy tìm mẫu số chung rồi quy đồng từng phân số.",
+    "generated": true,
+    "fallbackUsed": false
+  }
+}
+
+Endpoint 7 — Tạo biến thể câu hỏi bằng AI
+POST /api/v1/ai/generate-question-variant
+Request
+{
+  "packageId": "math-fractions-v1",
+  "skillId": "F11",
+  "questionId": "P_F11_002",
+  "style": "step_by_step",
+  "constraints": {
+    "questionType": "multiple_choice",
+    "difficulty": 2,
+    "denominatorMax": 12,
+    "singleCorrectAnswer": true,
+    "mustIncludeValidation": true,
+    "mustIncludeErrorMappings": true,
+    "allowedPurpose": "practice",
+    "allowedErrorPatterns": [
+      "ADD_DENOMINATORS",
+      "SWAP_MULTIPLIERS",
+      "CHANGE_DENOMINATOR_ONLY",
+      "USES_PRODUCT_INSTEAD_OF_LCM"
+    ]
+  }
+}
+Response
+{
+  "success": true,
+  "data": {
+    "id": "AI_F11_VARIANT_001",
+    "skillId": "F11",
+    "sourceQuestionId": "P_F11_002",
+    "purpose": "practice",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Quy đồng 1/3 và 1/4 về mẫu số 12.",
+    "options": [
+      {"id": "A", "text": "4/12 và 3/12"},
+      {"id": "B", "text": "3/12 và 4/12"},
+      {"id": "C", "text": "1/12 và 1/12"},
+      {"id": "D", "text": "2/12 và 2/12"}
+    ],
+    "validation": {"correctAnswer": "A"},
+    "errorMappings": {
+      "B": "SWAP_MULTIPLIERS",
+      "C": "CHANGE_DENOMINATOR_ONLY",
+      "D": "ADD_DENOMINATORS"
+    },
+    "style": "step_by_step",
+    "generated": true,
+    "fallbackUsed": false
+  }
+}
+
+Endpoint 8 — Tạo gợi ý từ kết quả chẩn đoán
+POST /api/v1/ai/generate-diagnosis-hint
+Request
+{
+  "packageId": "math-fractions-v1",
+  "diagnosisSessionId": "diag-001",
+  "style": "short",
+  "constraints": {
+    "maxSentences": 2,
+    "maxWords": 30
+  }
+}
+Response
+{
+  "success": true,
+  "data": {
+    "id": "HINT_diag-001__short",
+    "skillId": "F11",
+    "sourceContentId": "diag-001",
+    "style": "short",
+    "message": "Hãy tìm mẫu số chung trước, rồi đổi từng phân số về mẫu đó.",
+    "generated": true,
+    "fallbackUsed": false
+  }
+}
+
+Lỗi AI bổ sung:
+- AI_CONTENT_ERROR: source/constraints không hợp lệ và không có fallback sử dụng được.
+- AI_HINT_NOT_READY: phiên chẩn đoán chưa hoàn tất.
+- AI_HINT_NOT_AVAILABLE: phiên hoàn tất nhưng không có knowledge_gap.

@@ -1,8 +1,8 @@
 """Internal, guarded AI content generation for the learning package.
 
-This module deliberately has no FastAPI routes.  The diagnostic engine remains
-the owner of diagnosis state; this service can only rewrite or generate content
-for a skill that the caller has already selected.
+The diagnostic engine remains the owner of diagnosis state; this service can
+only rewrite or generate content for a skill that the caller has already
+selected and the API layer has verified.
 """
 
 from __future__ import annotations
@@ -236,7 +236,11 @@ class AIContentService:
         else:
             self.package = validate_learning_package(dict(package))
         self.client = client
-        self.api_key = api_key if api_key is not None else os.getenv("PEERSTUDY_AI_API_KEY")
+        self.api_key = (
+            api_key
+            if api_key is not None
+            else os.getenv("FPT_AI_API_KEY") or os.getenv("PEERSTUDY_AI_API_KEY")
+        )
         self.timeout_seconds = timeout_seconds
 
         package_data = self.package.model_dump(mode="python")

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { BookOpen, PenTool, CheckCircle, ArrowRight, RotateCcw, Lightbulb, Eye } from 'lucide-react'
-import type { LearningPath, LearningPackage, NextAction, Question, Explanation } from '../../types/api'
-import { submitAttempt } from '../../lib/api'
+import type { LearningPath, LearningPackage, NextAction, Question, Explanation, WorkedExample } from '../../types/api'
+import { ApiError, submitAttempt } from '../../lib/api'
+import { getWorkedExampleById } from '../../lib/learning'
 import { QuestionCard } from './QuestionCard'
 import { Card, CardHeader } from '../ui/Card'
 import { Button } from '../ui/Button'
@@ -18,9 +19,10 @@ interface LearningPathViewProps {
 export function LearningPathView({ path, studentId, packageId, learningPackage, onComplete }: LearningPathViewProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'error'; message: string } | null>(null)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'warning' | 'error'; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set())
+  const attemptEventIdRef = useRef<string | null>(null)
 
   const answerStartRef = useRef(Date.now())
   const attemptCountsRef = useRef<Record<string, number>>({})
@@ -31,7 +33,7 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
 
   useEffect(() => {
     answerStartRef.current = Date.now()
-  }, [currentStep?.id])
+  }, [currentStep?.id, currentQuestionIndex])
 
   useEffect(() => {
     setCurrentQuestionIndex(0)
@@ -43,13 +45,13 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
   const getExplanationById = (id: string): Explanation | undefined =>
     learningPackage.explanations.find(e => e.id === id)
 
-  const currentQuestionId = currentStep?.questionIds?.[currentQuestionIndex]
-  const currentQuestion = currentQuestionId ? getQuestionById(currentQuestionId) : undefined
-  const isLastQuestionInStep = currentStep?.questionIds
-    ? currentQuestionIndex >= currentStep.questionIds.length - 1
-    : true
+  const getWorkedExample = (id: string): WorkedExample | undefined =>
+    getWorkedExampleById(learningPackage, id)
 
-  function advanceStep() {
+  const activeQuestionId = currentStep.questionIds?.[currentQuestionIndex]
+  const activeQuestion = activeQuestionId ? getQuestionById(activeQuestionId) : undefined
+
+  function handleStepComplete() {
     if (advancingRef.current) return
     advancingRef.current = true
 
@@ -61,42 +63,40 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
       setCurrentStepIndex(currentStepIndex + 1)
       setFeedback(null)
       setSubmitted(false)
+      attemptEventIdRef.current = null
+      setCurrentQuestionIndex(0)
     } else {
       setTimeout(() => onComplete('completed'), 800)
     }
     advancingRef.current = false
   }
 
-  function handleStepComplete() {
-    if (advancingRef.current) return
-    advanceStep()
-  }
-
   async function handleAnswer(answer: string) {
-    if (!currentQuestion || submitted || advancingRef.current) return
+    if (!activeQuestion || submitted || advancingRef.current) return
     setSubmitted(true)
     setFeedback(null)
 
     try {
       const responseTimeMs = Date.now() - answerStartRef.current
-      const attemptKey = currentQuestion.id
+      const attemptKey = activeQuestion.id
       const currentAttempt = attemptCountsRef.current[attemptKey] ?? 0
       attemptCountsRef.current[attemptKey] = currentAttempt + 1
 
       const response = await submitAttempt({
-        eventId: crypto.randomUUID(),
+        eventId: attemptEventIdRef.current ?? (attemptEventIdRef.current = crypto.randomUUID()),
         studentId,
         classId: 'class-7a',
         packageId,
-        questionId: currentQuestion.id,
-        purpose: currentQuestion.purpose,
+        questionId: activeQuestion.id,
+        purpose: activeQuestion.purpose,
         context: { learningPathId: path.id, learningStepId: currentStep.id },
-        answer: { type: currentQuestion.type, value: answer },
+        answer: { type: activeQuestion.type, value: answer },
         responseTimeMs,
         attemptNumber: currentAttempt + 1,
         deviceTimestamp: new Date().toISOString(),
-        offlineCreated: !navigator.onLine
+        offlineCreated: !navigator.onLine,
       })
+      attemptEventIdRef.current = null
 
       const res = response as { correct: boolean; feedback: { type: string; message: string }; next: { action: NextAction } }
       setFeedback({
@@ -105,20 +105,27 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
       })
 
       if (res.correct || currentStep.type === 'practice') {
-        if (isLastQuestionInStep) {
-          setTimeout(advanceStep, 1200)
-        } else {
-          setTimeout(() => {
-            setCurrentQuestionIndex(currentQuestionIndex + 1)
+        const questionCount = currentStep.questionIds?.length ?? 0
+        const hasNextQuestion = currentQuestionIndex < questionCount - 1
+        setTimeout(() => {
+          if (hasNextQuestion) {
+            setCurrentQuestionIndex(index => index + 1)
             setFeedback(null)
             setSubmitted(false)
-          }, 1200)
-        }
+            attemptEventIdRef.current = null
+          } else {
+            void handleStepComplete()
+          }
+        }, 1200)
       } else {
         setSubmitted(false)
       }
-    } catch {
-      setFeedback({ type: 'error', message: 'Có lỗi xảy ra. Vui lòng thử lại.' })
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'OFFLINE') {
+        setFeedback({ type: 'warning', message: error.message })
+        return
+      }
+      setFeedback({ type: 'error', message: error instanceof Error ? error.message : 'Có lỗi xảy ra. Vui lòng thử lại.' })
       setSubmitted(false)
     }
   }
@@ -189,19 +196,26 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
 
         {currentStep.type === 'worked_example' && currentStep.contentId && (
           <WorkedExampleStep
-            explanation={getExplanationById(currentStep.contentId)}
+            example={getWorkedExample(currentStep.contentId)}
             onComplete={handleStepComplete}
           />
         )}
 
-        {(currentStep.type === 'practice' || currentStep.type === 'checkpoint' || currentStep.type === 'return_to_target') && currentQuestion && (
-          <QuestionCard
-            key={currentQuestion.id}
-            question={currentQuestion}
-            onSubmit={handleAnswer}
-            feedback={feedback}
-            disabled={submitted}
-          />
+        {(currentStep.type === 'practice' || currentStep.type === 'checkpoint' || currentStep.type === 'return_to_target') && activeQuestion && (
+          <div>
+            {(currentStep.questionIds?.length ?? 0) > 1 && (
+              <p className="mb-4 text-sm text-slate-500">
+                Câu {currentQuestionIndex + 1} / {currentStep.questionIds?.length}
+              </p>
+            )}
+            <QuestionCard
+              key={activeQuestion.id}
+              question={activeQuestion}
+              onSubmit={handleAnswer}
+              feedback={feedback}
+              disabled={submitted}
+            />
+          </div>
         )}
       </Card>
     </div>
@@ -225,7 +239,7 @@ function ExplanationStep({ explanation, onComplete }: { explanation?: Explanatio
   )
 }
 
-function WorkedExampleStep({ explanation, onComplete }: { explanation?: Explanation; onComplete: () => void }) {
+function WorkedExampleStep({ example, onComplete }: { example?: WorkedExample; onComplete: () => void }) {
   return (
     <div className="space-y-4">
       <div className="p-5 rounded-2xl bg-blue-50 border border-blue-100">
@@ -234,7 +248,16 @@ function WorkedExampleStep({ explanation, onComplete }: { explanation?: Explanat
           Ví dụ mẫu
         </div>
         <div className="space-y-3 text-slate-800">
-          <p className="text-base leading-relaxed">{explanation?.content ?? 'Nội dung ví dụ mẫu'}</p>
+          {example ? (
+            <>
+              <p className="font-semibold">{example.title}</p>
+              <ol className="list-decimal space-y-2 pl-5 text-base leading-relaxed">
+                {example.steps.map(step => <li key={step}>{step}</li>)}
+              </ol>
+            </>
+          ) : (
+            <p className="text-red-700">Không tìm thấy dữ liệu ví dụ mẫu trong gói học tập.</p>
+          )}
         </div>
       </div>
       <Button onClick={onComplete}>

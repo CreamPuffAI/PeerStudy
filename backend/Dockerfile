@@ -2,7 +2,10 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+    PIP_NO_CACHE_DIR=1 \
+    FPT_AI_BASE_URL=https://mkp-api.fptcloud.com/chat/completions \
+    FPT_AI_STREAM=true \
+    FPT_AI_TIMEOUT_SECONDS=8
 
 WORKDIR /app
 

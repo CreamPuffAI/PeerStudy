@@ -17,6 +17,18 @@ Package được tạo tự động ở lần chạy workflow đầu tiên có q
 
 2. Copy `docker-compose.yml` và `.env.example` lên VPS, đổi tên `.env.example` thành `.env`, rồi chỉnh `GHCR_NAMESPACE` nếu owner khác `creampuffai`.
 
+   Điền cấu hình FPT AI Market trực tiếp trong `.env` trên VPS, không commit file này và không truyền token qua Docker build args:
+
+   ```dotenv
+   FPT_AI_API_KEY=your-real-token
+   FPT_AI_MODEL=your-fpt-market-model-name
+   FPT_AI_BASE_URL=https://mkp-api.fptcloud.com/chat/completions
+   FPT_AI_STREAM=true
+   FPT_AI_TIMEOUT_SECONDS=8
+   ```
+
+   Nếu thiếu `FPT_AI_API_KEY` hoặc `FPT_AI_MODEL`, backend vẫn chạy và tự dùng nội dung fallback deterministic từ learning package.
+
 3. Khởi chạy:
 
    ```bash

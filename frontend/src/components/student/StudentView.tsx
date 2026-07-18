@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { GraduationCap, ArrowLeft, ArrowRight, BookOpen, Target, Trophy, Clock } from 'lucide-react'
 import type { NextAction, LearningPackage, LearningPath, Question } from '../../types/api'
-import { fetchLearningPackage } from '../../lib/api'
-import { submitAttempt } from '../../lib/api'
+import { ApiError, fetchLearningPackage, submitAttempt } from '../../lib/api'
 import { QuestionCard } from './QuestionCard'
 import { DiagnosticView } from './DiagnosticView'
 import { LearningPathView } from './LearningPathView'
@@ -18,14 +17,30 @@ interface StudentViewProps {
 export function StudentView({ studentId, packageId, onBack }: StudentViewProps) {
   const [pkg, setPkg] = useState<LearningPackage | null>(null)
   const [loading, setLoading] = useState(true)
+  const [packageError, setPackageError] = useState<string | null>(null)
   const [screen, setScreen] = useState<'menu' | 'practice' | 'diagnostic' | 'learning' | 'completed'>('menu')
   const [questionId, setQuestionId] = useState('Q_E01_001')
   const [diagnosisSessionId, setDiagnosisSessionId] = useState<string | null>(null)
   const [learningPathId, setLearningPathId] = useState<string | null>(null)
   const [learningPathData, setLearningPathData] = useState<LearningPath | null>(null)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'error'; message: string } | null>(null)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'warning' | 'error'; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [nextQuestionId, setNextQuestionId] = useState<string | null>(null)
+  const attemptEventIdRef = useRef<string | null>(null)
+
+  const loadPackage = useCallback(async () => {
+    setLoading(true)
+    setPackageError(null)
+    try {
+      const data = await fetchLearningPackage(packageId)
+      setPkg(data)
+    } catch (error) {
+      setPkg(null)
+      setPackageError(error instanceof Error ? error.message : 'Không thể tải gói học tập.')
+    } finally {
+      setLoading(false)
+    }
+  }, [packageId])
 
   const answerStartRef = useRef(Date.now())
   const attemptCountsRef = useRef<Record<string, number>>({})
@@ -41,20 +56,11 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
   }, [screen])
 
   useEffect(() => {
-    let cancelled = false
-    fetchLearningPackage(packageId)
-      .then(data => { if (!cancelled) setPkg(data) })
-      .catch(() => { if (!cancelled) setPkg(null) })
-      .finally(() => { if (!cancelled) setLoading(false) })
-    return () => { cancelled = true }
-  }, [packageId])
+    void loadPackage()
+  }, [loadPackage])
 
   const getQuestionById = useCallback((id: string): Question | undefined => {
     return pkg?.questions.find(q => q.id === id)
-  }, [pkg])
-
-  const getLearningPathById = useCallback((id: string): LearningPath | undefined => {
-    return pkg?.learningPaths?.find(p => p.id === id)
   }, [pkg])
 
   const question = pkg ? getQuestionById(questionId) : undefined
@@ -71,7 +77,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
       attemptCountsRef.current[attemptKey] = currentAttempt + 1
 
       const response = await submitAttempt({
-        eventId: crypto.randomUUID(),
+        eventId: attemptEventIdRef.current ?? (attemptEventIdRef.current = crypto.randomUUID()),
         studentId,
         classId: 'class-7a',
         packageId,
@@ -84,6 +90,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
         deviceTimestamp: new Date().toISOString(),
         offlineCreated: !navigator.onLine
       })
+      attemptEventIdRef.current = null
 
       const res = response as {
         correct: boolean
@@ -112,8 +119,13 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
       } else if (res.next.action === 'return_to_target' && res.next.questionId) {
         setNextQuestionId(res.next.questionId)
       }
-    } catch {
-      setFeedback({ type: 'error', message: 'Có lỗi xảy ra. Vui lòng thử lại.' })
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'OFFLINE') {
+        setFeedback({ type: 'warning', message: error.message })
+        return
+      }
+      attemptEventIdRef.current = null
+      setFeedback({ type: 'error', message: error instanceof Error ? error.message : 'Có lỗi xảy ra. Vui lòng thử lại.' })
       setSubmitted(false)
     }
   }
@@ -121,6 +133,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
   function handleNextQuestion() {
     if (!nextQuestionId) return
     setQuestionId(nextQuestionId)
+    attemptEventIdRef.current = null
     setNextQuestionId(null)
     setSubmitted(false)
     setFeedback(null)
@@ -152,9 +165,12 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
 
   if (!pkg) {
     return (
-      <div className="text-center py-12 text-slate-500">
+      <div className="text-center py-12 text-slate-500" role="alert">
         <p>Không thể tải gói học tập.</p>
-        <p className="text-sm mt-1">Đảm bảo backend đang chạy tại localhost:8000.</p>
+        {packageError && <p className="text-sm mt-1 text-red-700">{packageError}</p>}
+        <Button onClick={() => void loadPackage()} variant="secondary" className="mt-4">
+          Thử lại
+        </Button>
       </div>
     )
   }

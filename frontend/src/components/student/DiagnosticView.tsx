@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { Brain, ChevronRight, TrendingUp, AlertTriangle, ArrowRight } from 'lucide-react'
 import type { DiagnosisSession, AttemptResponse, NextAction, LearningPath } from '../../types/api'
-import { getDiagnosisSession, submitAttempt } from '../../lib/api'
+import { ApiError, getDiagnosisSession, submitAttempt } from '../../lib/api'
 import { QuestionCard } from './QuestionCard'
 import { Card, CardHeader } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { ProgressBar } from '../ui/ProgressBar'
+import { DiagnosisHint } from './DiagnosisHint'
 
 interface DiagnosticViewProps {
   sessionId: string
@@ -17,16 +18,33 @@ interface DiagnosticViewProps {
 export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: DiagnosticViewProps) {
   const [session, setSession] = useState<DiagnosisSession | null>(null)
   const [loading, setLoading] = useState(true)
-  const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'error'; message: string } | null>(null)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'warning' | 'error'; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [showNextButton, setShowNextButton] = useState(false)
   const [nextAction, setNextAction] = useState<{ action: NextAction; learningPathId?: string } | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [nextLoading, setNextLoading] = useState(false)
+  const attemptEventIdRef = useRef<string | null>(null)
 
   const answerStartRef = useRef(Date.now())
   const attemptCountsRef = useRef<Record<string, number>>({})
 
   useEffect(() => {
-    loadSession()
+    void loadSession()
+  }, [sessionId])
+
+  useEffect(() => {
+    const handleSyncComplete = () => {
+      void loadSession().then(() => {
+        setSubmitted(false)
+        setFeedback({ type: 'success', message: 'Đáp án offline đã được đồng bộ.' })
+        setShowNextButton(false)
+        setNextAction(null)
+        attemptEventIdRef.current = null
+      })
+    }
+    window.addEventListener('peerstudy:sync-complete', handleSyncComplete)
+    return () => window.removeEventListener('peerstudy:sync-complete', handleSyncComplete)
   }, [sessionId])
 
   useEffect(() => {
@@ -35,13 +53,18 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
 
   async function loadSession() {
     setLoading(true)
+    setLoadError(null)
     try {
       const s = await getDiagnosisSession(sessionId)
       setSession(s)
-    } catch {
-      setFeedback({ type: 'error', message: 'Không thể tải phiên chẩn đoán.' })
+      return s
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Không thể tải phiên chẩn đoán.'
+      setLoadError(message)
+      return null
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   async function handleAnswer(answer: string) {
@@ -57,7 +80,7 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
       attemptCountsRef.current[attemptKey] = currentAttempt + 1
 
       const response = await submitAttempt({
-        eventId: crypto.randomUUID(),
+        eventId: attemptEventIdRef.current ?? (attemptEventIdRef.current = crypto.randomUUID()),
         studentId,
         classId: 'class-7a',
         packageId,
@@ -79,39 +102,50 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
       }
 
       if (res.next.action === 'continue_diagnostic' && res.next.questionId) {
+        attemptEventIdRef.current = null
         setNextAction({ action: 'continue_diagnostic' })
         setShowNextButton(true)
       } else if (res.next.action === 'start_learning_path' || res.next.action === 'continue_practice' || res.next.action === 'completed') {
         const completed = await getDiagnosisSession(sessionId)
+        attemptEventIdRef.current = null
         setSession(completed)
         setNextAction({ action: res.next.action, learningPathId: res.next.learningPathId ?? completed.learningPath?.id })
         setShowNextButton(true)
       } else {
+        attemptEventIdRef.current = null
         setNextAction({ action: res.next.action, learningPathId: res.next.learningPathId })
         setShowNextButton(true)
       }
-    } catch {
-      setFeedback({ type: 'error', message: 'Có lỗi xảy ra. Vui lòng thử lại.' })
+    } catch (error) {
+      if (error instanceof ApiError && error.code === 'OFFLINE') {
+        setFeedback({ type: 'warning', message: error.message })
+        return
+      }
+      setFeedback({ type: 'error', message: error instanceof Error ? error.message : 'Có lỗi xảy ra. Vui lòng thử lại.' })
       setSubmitted(false)
     }
   }
 
   async function handleNextQuestion() {
     if (!nextAction) return
+    setNextLoading(true)
 
-    if (nextAction.action === 'continue_diagnostic') {
-      try {
+    try {
+      if (nextAction.action === 'continue_diagnostic') {
         const updated = await getDiagnosisSession(sessionId)
         setSession(updated)
         setSubmitted(false)
         setFeedback(null)
         setShowNextButton(false)
         setNextAction(null)
-      } catch {
-        setFeedback({ type: 'error', message: 'Không thể tải câu tiếp theo. Vui lòng thử lại.' })
+        attemptEventIdRef.current = null
+      } else {
+        onComplete(nextAction.action, nextAction.learningPathId, session?.learningPath ?? undefined)
       }
-    } else {
-      onComplete(nextAction.action, nextAction.learningPathId, session?.learningPath ?? undefined)
+    } catch (error) {
+      setFeedback({ type: 'error', message: error instanceof Error ? error.message : 'Không thể tải bước tiếp theo.' })
+    } finally {
+      setNextLoading(false)
     }
   }
 
@@ -129,8 +163,12 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
   if (!session) {
     return (
       <Card role="alert">
-        <CardHeader title="Không tìm thấy phiên chẩn đoán" />
-        <Button onClick={() => onComplete('continue_practice')}>Quay lại</Button>
+        <CardHeader title={loadError ? 'Không thể tải phiên chẩn đoán' : 'Không tìm thấy phiên chẩn đoán'} />
+        {loadError && <p className="mb-4 text-sm text-red-700">{loadError}</p>}
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => void loadSession()} variant="secondary">Thử lại</Button>
+          <Button onClick={() => onComplete('continue_practice')}>Quay lại</Button>
+        </div>
       </Card>
     )
   }
@@ -176,6 +214,14 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
                 Thời gian dự kiến: {session.learningPath.estimatedMinutes} phút
               </p>
             </div>
+          )}
+
+          {session.diagnosis.classification === 'knowledge_gap' && rootGap && (
+            <DiagnosisHint
+              packageId={packageId}
+              diagnosisSessionId={session.id}
+              skillId={rootGap.skillId}
+            />
           )}
 
           <Button onClick={() => onComplete(session.next?.action ?? 'start_learning_path', session.learningPath?.id, session.learningPath ?? undefined)}>
@@ -227,11 +273,12 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
           {showNextButton && (
             <div className="mt-4 pt-4 border-t border-slate-100">
               <Button 
-                onClick={handleNextQuestion}
+                onClick={() => void handleNextQuestion()}
+                disabled={nextLoading}
                 className="w-full"
                 size="lg"
               >
-                {nextAction?.action === 'continue_diagnostic' ? (
+                {nextLoading ? 'Đang tải...' : nextAction?.action === 'continue_diagnostic' ? (
                   <>
                     Câu tiếp theo
                     <ArrowRight className="w-4 h-4" />
