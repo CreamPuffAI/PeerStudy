@@ -1,0 +1,9 @@
+.serena
+.sisyphus
+
+data
+node_modules
+dist
+.env
+docs/
+AGENTS.md

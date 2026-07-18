@@ -1,0 +1,1085 @@
+{
+  "packageId": "math-fractions-v1",
+  "version": 3,
+  "name": "Phân số và phương trình chứa phân số",
+  "updatedAt": "2026-07-17T10:00:00Z",
+  "skills": [
+    {
+      "id": "F02",
+      "name": "Hiểu ý nghĩa phân số",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Hiểu phân số biểu diễn một phần của đơn vị hoặc một thương.",
+      "prerequisiteIds": [],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F03",
+      "name": "Tử số và mẫu số, mẫu số khác 0",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Nhận biết tử số, mẫu số và điều kiện mẫu số khác 0.",
+      "prerequisiteIds": [
+        "F02"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F05",
+      "name": "Hiểu độ lớn của phân số",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "So sánh trực quan và ước lượng độ lớn của phân số.",
+      "prerequisiteIds": [
+        "F03"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F06",
+      "name": "Nhận biết hai phân số bằng nhau",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Nhận ra hai phân số biểu diễn cùng một giá trị.",
+      "prerequisiteIds": [
+        "F05"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F07",
+      "name": "Tính chất cơ bản của phân số",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Nhân hoặc chia cả tử và mẫu với cùng một số khác 0 để được phân số bằng phân số ban đầu.",
+      "prerequisiteIds": [
+        "F06"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F08",
+      "name": "Tạo phân số tương đương",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Tạo phân số tương đương bằng cách nhân hoặc chia tử và mẫu với cùng một số khác 0.",
+      "prerequisiteIds": [
+        "F07"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F09",
+      "name": "Rút gọn phân số",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Rút gọn phân số về dạng đơn giản hơn.",
+      "prerequisiteIds": [
+        "F08"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F10",
+      "name": "So sánh phân số cùng mẫu",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "So sánh hai phân số có cùng mẫu số.",
+      "prerequisiteIds": [
+        "F05"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F11",
+      "name": "Quy đồng mẫu số",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Đưa hai hoặc nhiều phân số về cùng mẫu số.",
+      "prerequisiteIds": [
+        "F08"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F12",
+      "name": "So sánh phân số khác mẫu",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Quy đồng hoặc biến đổi để so sánh hai phân số khác mẫu.",
+      "prerequisiteIds": [
+        "F10",
+        "F11"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F13",
+      "name": "Cộng, trừ phân số cùng mẫu",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Cộng hoặc trừ các phân số có cùng mẫu số.",
+      "prerequisiteIds": [
+        "F03"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F14",
+      "name": "Cộng, trừ phân số khác mẫu",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Quy đồng rồi cộng hoặc trừ các phân số khác mẫu.",
+      "prerequisiteIds": [
+        "F11",
+        "F13"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F15",
+      "name": "Nhân phân số",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Nhân tử với tử, mẫu với mẫu khi nhân hai phân số.",
+      "prerequisiteIds": [
+        "F03"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F16",
+      "name": "Nghịch đảo của phân số khác 0",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Tìm phân số nghịch đảo của một phân số khác 0.",
+      "prerequisiteIds": [
+        "F03"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "F17",
+      "name": "Chia cho một phân số khác 0",
+      "grade": 5,
+      "domain": "fractions",
+      "description": "Chia cho một phân số bằng cách nhân với phân số nghịch đảo.",
+      "prerequisiteIds": [
+        "F15",
+        "F16"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "R02",
+      "name": "Phép toán số hữu tỉ",
+      "grade": 7,
+      "domain": "rational_numbers",
+      "description": "Thực hiện phép toán với số hữu tỉ, bao gồm phân số và số âm.",
+      "prerequisiteIds": [
+        "F14",
+        "F17"
+      ],
+      "masteryThreshold": 0.8
+    },
+    {
+      "id": "E01",
+      "name": "Phương trình chứa phân số",
+      "grade": 7,
+      "domain": "linear_equations",
+      "description": "Giải phương trình bậc nhất có hệ số hoặc hằng số là phân số.",
+      "prerequisiteIds": [
+        "F14",
+        "R02"
+      ],
+      "masteryThreshold": 0.8
+    }
+  ],
+  "edges": [
+    {
+      "from": "F02",
+      "to": "F03",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F03",
+      "to": "F05",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F03",
+      "to": "F13",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F03",
+      "to": "F15",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F03",
+      "to": "F16",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F05",
+      "to": "F06",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F05",
+      "to": "F10",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F06",
+      "to": "F07",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F07",
+      "to": "F08",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F08",
+      "to": "F09",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F08",
+      "to": "F11",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F10",
+      "to": "F12",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F11",
+      "to": "F12",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F11",
+      "to": "F14",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F13",
+      "to": "F14",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F15",
+      "to": "F17",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F16",
+      "to": "F17",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F14",
+      "to": "R02",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F17",
+      "to": "R02",
+      "type": "SUPPORTS"
+    },
+    {
+      "from": "F14",
+      "to": "E01",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "R02",
+      "to": "E01",
+      "type": "PREREQUISITE_OF"
+    },
+    {
+      "from": "F08",
+      "to": "F09",
+      "type": "COMMONLY_CONFUSED_WITH"
+    },
+    {
+      "from": "F09",
+      "to": "F08",
+      "type": "COMMONLY_CONFUSED_WITH"
+    },
+    {
+      "from": "F11",
+      "to": "F14",
+      "type": "COMMONLY_CONFUSED_WITH"
+    },
+    {
+      "from": "F14",
+      "to": "F11",
+      "type": "COMMONLY_CONFUSED_WITH"
+    }
+  ],
+  "questions": [
+    {
+      "id": "Q_E01_001",
+      "skillId": "E01",
+      "purpose": "target",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Giải phương trình x/3 + 1/2 = 5/6.",
+      "options": [
+        {
+          "id": "A",
+          "text": "x = 1"
+        },
+        {
+          "id": "B",
+          "text": "x = 2"
+        },
+        {
+          "id": "C",
+          "text": "x = 1/3"
+        },
+        {
+          "id": "D",
+          "text": "x = 3"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "A"
+      },
+      "errorMappings": {
+        "B": "ADD_DENOMINATORS",
+        "C": "EQUATION_FRACTION_TRANSFORM_ERROR",
+        "D": "ADD_DENOMINATORS"
+      }
+    },
+    {
+      "id": "Q_E01_002",
+      "skillId": "E01",
+      "purpose": "target",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Giải phương trình x/4 + 1/2 = 3/4.",
+      "options": [
+        {
+          "id": "A",
+          "text": "x = 1"
+        },
+        {
+          "id": "B",
+          "text": "x = 2"
+        },
+        {
+          "id": "C",
+          "text": "x = 1/4"
+        },
+        {
+          "id": "D",
+          "text": "x = 4"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "A"
+      },
+      "errorMappings": {
+        "B": "ADD_DENOMINATORS",
+        "C": "EQUATION_FRACTION_TRANSFORM_ERROR",
+        "D": "INVERT_OPERATION_ERROR"
+      }
+    },
+    {
+      "id": "Q_E01_RETRY_001",
+      "skillId": "E01",
+      "purpose": "target",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Làm lại: Giải phương trình x/3 + 1/2 = 5/6.",
+      "options": [
+        {
+          "id": "A",
+          "text": "x = 1"
+        },
+        {
+          "id": "B",
+          "text": "x = 2"
+        },
+        {
+          "id": "C",
+          "text": "x = 1/3"
+        },
+        {
+          "id": "D",
+          "text": "x = 3"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "A"
+      },
+      "errorMappings": {
+        "B": "ADD_DENOMINATORS",
+        "C": "EQUATION_FRACTION_TRANSFORM_ERROR",
+        "D": "ADD_DENOMINATORS"
+      }
+    },
+    {
+      "id": "DQ_F08_001",
+      "skillId": "F08",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "prompt": "Phân số nào tương đương với 1/2?",
+      "options": [
+        {
+          "id": "A",
+          "text": "2/4"
+        },
+        {
+          "id": "B",
+          "text": "2/3"
+        },
+        {
+          "id": "C",
+          "text": "1/4"
+        },
+        {
+          "id": "D",
+          "text": "3/2"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "A"
+      },
+      "errorMappings": {
+        "B": "EQUIVALENT_FRACTION_MISCONCEPTION",
+        "C": "MULTIPLY_DENOMINATOR_ONLY",
+        "D": "INVERT_FRACTION"
+      }
+    },
+    {
+      "id": "DQ_F08_002",
+      "skillId": "F08",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "prompt": "Muốn biến 2/3 thành phân số tương đương có mẫu số 12, tử số phải là bao nhiêu?",
+      "options": [
+        {
+          "id": "A",
+          "text": "4"
+        },
+        {
+          "id": "B",
+          "text": "6"
+        },
+        {
+          "id": "C",
+          "text": "8"
+        },
+        {
+          "id": "D",
+          "text": "10"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "C"
+      },
+      "errorMappings": {
+        "A": "MULTIPLY_DENOMINATOR_ONLY",
+        "B": "ADD_SAME_AMOUNT_TO_NUMERATOR",
+        "D": "ADD_DENOMINATORS"
+      }
+    },
+    {
+      "id": "DQ_F11_001",
+      "skillId": "F11",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "prompt": "Mẫu số chung nhỏ nhất của 2 và 3 là bao nhiêu?",
+      "options": [
+        {
+          "id": "A",
+          "text": "5"
+        },
+        {
+          "id": "B",
+          "text": "6"
+        },
+        {
+          "id": "C",
+          "text": "8"
+        },
+        {
+          "id": "D",
+          "text": "12"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "B"
+      },
+      "errorMappings": {
+        "A": "ADD_DENOMINATORS",
+        "C": "INCOMPLETE_MULTIPLE",
+        "D": "USES_PRODUCT_WHEN_LCM_IS_ENOUGH"
+      }
+    },
+    {
+      "id": "DQ_F11_002",
+      "skillId": "F11",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "prompt": "Mẫu số chung nhỏ nhất của 4 và 6 là bao nhiêu?",
+      "options": [
+        {
+          "id": "A",
+          "text": "8"
+        },
+        {
+          "id": "B",
+          "text": "10"
+        },
+        {
+          "id": "C",
+          "text": "12"
+        },
+        {
+          "id": "D",
+          "text": "24"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "C"
+      },
+      "errorMappings": {
+        "A": "INCOMPLETE_MULTIPLE",
+        "B": "ADD_DENOMINATORS",
+        "D": "USES_PRODUCT_INSTEAD_OF_LCM"
+      }
+    },
+    {
+      "id": "DQ_F11_003",
+      "skillId": "F11",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Sau khi quy đồng 1/2 và 1/3 về mẫu số 6, ta được cặp phân số nào?",
+      "options": [
+        {
+          "id": "A",
+          "text": "2/6 và 3/6"
+        },
+        {
+          "id": "B",
+          "text": "3/6 và 2/6"
+        },
+        {
+          "id": "C",
+          "text": "1/6 và 1/6"
+        },
+        {
+          "id": "D",
+          "text": "2/5 và 3/5"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "B"
+      },
+      "errorMappings": {
+        "A": "SWAP_MULTIPLIERS",
+        "C": "CHANGE_DENOMINATOR_ONLY",
+        "D": "ADD_DENOMINATORS"
+      }
+    },
+    {
+      "id": "DQ_F14_001",
+      "skillId": "F14",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Tính 1/2 + 1/3.",
+      "options": [
+        {
+          "id": "A",
+          "text": "2/5"
+        },
+        {
+          "id": "B",
+          "text": "5/6"
+        },
+        {
+          "id": "C",
+          "text": "1/5"
+        },
+        {
+          "id": "D",
+          "text": "3/6"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "B"
+      },
+      "errorMappings": {
+        "A": "ADD_NUMERATORS_AND_DENOMINATORS",
+        "C": "SUBTRACT_INSTEAD_OF_ADD",
+        "D": "INCOMPLETE_FRACTION_ADDITION"
+      }
+    },
+    {
+      "id": "DQ_R02_001",
+      "skillId": "R02",
+      "purpose": "diagnostic",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Tính -1/2 + 1/3.",
+      "options": [
+        {
+          "id": "A",
+          "text": "-1/6"
+        },
+        {
+          "id": "B",
+          "text": "1/6"
+        },
+        {
+          "id": "C",
+          "text": "-2/5"
+        },
+        {
+          "id": "D",
+          "text": "2/5"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "A"
+      },
+      "errorMappings": {
+        "B": "SIGN_RULE_ERROR",
+        "C": "ADD_NUMERATORS_AND_DENOMINATORS",
+        "D": "SIGN_RULE_ERROR"
+      }
+    },
+    {
+      "id": "P_F11_001",
+      "skillId": "F11",
+      "purpose": "practice",
+      "type": "multiple_choice",
+      "difficulty": 1,
+      "prompt": "Mẫu số chung nhỏ nhất của 3 và 6 là bao nhiêu?",
+      "options": [
+        {
+          "id": "A",
+          "text": "3"
+        },
+        {
+          "id": "B",
+          "text": "6"
+        },
+        {
+          "id": "C",
+          "text": "9"
+        },
+        {
+          "id": "D",
+          "text": "18"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "B"
+      },
+      "errorMappings": {
+        "C": "ADD_DENOMINATORS",
+        "D": "USES_PRODUCT_INSTEAD_OF_LCM"
+      }
+    },
+    {
+      "id": "P_F11_002",
+      "skillId": "F11",
+      "purpose": "practice",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Quy đồng 2/3 và 1/4 về mẫu số 12. Cặp phân số đúng là gì?",
+      "options": [
+        {
+          "id": "A",
+          "text": "8/12 và 3/12"
+        },
+        {
+          "id": "B",
+          "text": "6/12 và 4/12"
+        },
+        {
+          "id": "C",
+          "text": "2/12 và 1/12"
+        },
+        {
+          "id": "D",
+          "text": "5/12 và 5/12"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "A"
+      },
+      "errorMappings": {
+        "B": "SWAP_MULTIPLIERS",
+        "C": "CHANGE_DENOMINATOR_ONLY",
+        "D": "ADD_DENOMINATORS"
+      }
+    },
+    {
+      "id": "P_F11_003",
+      "skillId": "F11",
+      "purpose": "practice",
+      "type": "numeric",
+      "difficulty": 2,
+      "prompt": "Mẫu số chung nhỏ nhất của 5 và 10 là bao nhiêu?",
+      "validation": {
+        "correctAnswer": "10",
+        "acceptedAnswers": [
+          "10"
+        ],
+        "tolerance": 0
+      },
+      "errorMappings": {
+        "15": "ADD_DENOMINATORS",
+        "50": "USES_PRODUCT_INSTEAD_OF_LCM"
+      }
+    },
+    {
+      "id": "CP_F11_001",
+      "skillId": "F11",
+      "purpose": "checkpoint",
+      "type": "multiple_choice",
+      "difficulty": 2,
+      "prompt": "Quy đồng 3/4 và 1/6 về mẫu số 12. Cặp phân số đúng là gì?",
+      "options": [
+        {
+          "id": "A",
+          "text": "9/12 và 2/12"
+        },
+        {
+          "id": "B",
+          "text": "6/12 và 4/12"
+        },
+        {
+          "id": "C",
+          "text": "3/12 và 1/12"
+        },
+        {
+          "id": "D",
+          "text": "4/10 và 6/10"
+        }
+      ],
+      "validation": {
+        "correctAnswer": "A"
+      },
+      "errorMappings": {
+        "B": "SWAP_MULTIPLIERS",
+        "C": "CHANGE_DENOMINATOR_ONLY",
+        "D": "ADD_DENOMINATORS"
+      }
+    }
+  ],
+  "explanations": [
+    {
+      "id": "EXP_F08_BASIC",
+      "skillId": "F08",
+      "style": "step_by_step",
+      "content": "Hai phân số tương đương có cùng giá trị. Muốn tạo phân số tương đương, nhân cả tử số và mẫu số với cùng một số khác 0."
+    },
+    {
+      "id": "EXP_F11_BASIC",
+      "skillId": "F11",
+      "style": "step_by_step",
+      "content": "Muốn cộng hoặc so sánh hai phân số khác mẫu, trước hết cần đưa chúng về cùng một mẫu số. Mẫu số chung nên là bội chung nhỏ nhất để phép tính gọn hơn."
+    },
+    {
+      "id": "EXP_F14_BASIC",
+      "skillId": "F14",
+      "style": "step_by_step",
+      "content": "Với hai phân số khác mẫu, hãy quy đồng trước, sau đó cộng hoặc trừ tử số và giữ nguyên mẫu số chung."
+    },
+    {
+      "id": "EXP_R02_SIGN",
+      "skillId": "R02",
+      "style": "step_by_step",
+      "content": "Khi tính với số hữu tỉ âm, hãy xử lý dấu trước rồi thực hiện phép tính với phần phân số."
+    }
+  ],
+  "workedExamples": [
+    {
+      "id": "EXAMPLE_F11_001",
+      "skillId": "F11",
+      "title": "Quy đồng 1/2 và 1/3",
+      "steps": [
+        "Mẫu số của hai phân số là 2 và 3.",
+        "Bội chung nhỏ nhất của 2 và 3 là 6.",
+        "Đổi 1/2 thành 3/6 vì nhân cả tử và mẫu với 3.",
+        "Đổi 1/3 thành 2/6 vì nhân cả tử và mẫu với 2.",
+        "Vậy 1/2 và 1/3 sau khi quy đồng là 3/6 và 2/6."
+      ]
+    },
+    {
+      "id": "EXAMPLE_F14_001",
+      "skillId": "F14",
+      "title": "Cộng hai phân số khác mẫu",
+      "steps": [
+        "Tính 1/2 + 1/3.",
+        "Quy đồng về mẫu số 6: 1/2 = 3/6, 1/3 = 2/6.",
+        "Cộng tử số: 3 + 2 = 5.",
+        "Giữ mẫu số chung là 6.",
+        "Kết quả là 5/6."
+      ]
+    }
+  ],
+  "diagnosticRulesVersion": 2,
+  "diagnosticRules": [
+    {
+      "id": "RULE-F11-ADD-DENOMINATORS",
+      "triggerErrorPattern": "ADD_DENOMINATORS",
+      "candidateSkills": [
+        {
+          "skillId": "F11",
+          "weight": 0.75
+        },
+        {
+          "skillId": "F08",
+          "weight": 0.25
+        }
+      ],
+      "recommendedDiagnosticQuestionIds": [
+        "DQ_F08_001",
+        "DQ_F11_002",
+        "DQ_F11_003"
+      ],
+      "evidenceMessage": "Học sinh có dấu hiệu cộng hoặc xử lý trực tiếp mẫu số thay vì tìm mẫu số chung."
+    },
+    {
+      "id": "RULE-F08-EQUIVALENT-FRACTION",
+      "triggerErrorPattern": "EQUIVALENT_FRACTION_MISCONCEPTION",
+      "candidateSkills": [
+        {
+          "skillId": "F08",
+          "weight": 0.8
+        },
+        {
+          "skillId": "F07",
+          "weight": 0.2
+        }
+      ],
+      "recommendedDiagnosticQuestionIds": [
+        "DQ_F08_001",
+        "DQ_F08_002"
+      ],
+      "evidenceMessage": "Học sinh chưa chắc cách tạo phân số tương đương."
+    },
+    {
+      "id": "RULE-F14-FRACTION-ADDITION",
+      "triggerErrorPattern": "ADD_NUMERATORS_AND_DENOMINATORS",
+      "candidateSkills": [
+        {
+          "skillId": "F14",
+          "weight": 0.65
+        },
+        {
+          "skillId": "F11",
+          "weight": 0.35
+        }
+      ],
+      "recommendedDiagnosticQuestionIds": [
+        "DQ_F11_002",
+        "DQ_F14_001"
+      ],
+      "evidenceMessage": "Học sinh nhầm quy tắc cộng phân số khác mẫu."
+    },
+    {
+      "id": "RULE-R02-SIGN",
+      "triggerErrorPattern": "SIGN_RULE_ERROR",
+      "candidateSkills": [
+        {
+          "skillId": "R02",
+          "weight": 0.85
+        },
+        {
+          "skillId": "F14",
+          "weight": 0.15
+        }
+      ],
+      "recommendedDiagnosticQuestionIds": [
+        "DQ_R02_001",
+        "DQ_F14_001"
+      ],
+      "evidenceMessage": "Học sinh có dấu hiệu sai quy tắc dấu khi tính với số hữu tỉ."
+    },
+    {
+      "id": "RULE-CARELESS-FAST-RECOVERY",
+      "triggerErrorPattern": "CARELESS_FAST_ANSWER",
+      "candidateSkills": [],
+      "classification": "careless_mistake",
+      "evidenceMessage": "Nếu lịch sử đã thành thạo và học sinh trả lời đúng câu kiểm tra lại, ưu tiên phân loại lỗi bất cẩn."
+    }
+  ],
+  "learningPaths": [
+    {
+      "id": "lp-001",
+      "targetSkillId": "E01",
+      "rootGapSkillId": "F11",
+      "status": "not_started",
+      "estimatedMinutes": 8,
+      "steps": [
+        {
+          "id": "step-1",
+          "order": 1,
+          "type": "micro_explanation",
+          "skillId": "F11",
+          "contentId": "EXP_F11_BASIC"
+        },
+        {
+          "id": "step-2",
+          "order": 2,
+          "type": "worked_example",
+          "skillId": "F11",
+          "contentId": "EXAMPLE_F11_001"
+        },
+        {
+          "id": "step-3",
+          "order": 3,
+          "type": "practice",
+          "skillId": "F11",
+          "questionIds": [
+            "P_F11_001",
+            "P_F11_002"
+          ]
+        },
+        {
+          "id": "step-4",
+          "order": 4,
+          "type": "checkpoint",
+          "skillId": "F11",
+          "questionIds": [
+            "CP_F11_001"
+          ]
+        },
+        {
+          "id": "step-5",
+          "order": 5,
+          "type": "return_to_target",
+          "skillId": "E01",
+          "questionIds": [
+            "Q_E01_RETRY_001"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lp-r02-001",
+      "targetSkillId": "E01",
+      "rootGapSkillId": "R02",
+      "status": "not_started",
+      "estimatedMinutes": 6,
+      "steps": [
+        {
+          "id": "step-r02-1",
+          "order": 1,
+          "type": "micro_explanation",
+          "skillId": "R02",
+          "contentId": "EXP_R02_SIGN"
+        },
+        {
+          "id": "step-r02-2",
+          "order": 2,
+          "type": "practice",
+          "skillId": "R02",
+          "questionIds": [
+            "DQ_R02_001"
+          ]
+        },
+        {
+          "id": "step-r02-3",
+          "order": 3,
+          "type": "return_to_target",
+          "skillId": "E01",
+          "questionIds": [
+            "Q_E01_002"
+          ]
+        }
+      ]
+    }
+  ],
+  "aiTemplates": [
+    {
+      "id": "AI_EXPLAIN_F11_STEP_BY_STEP",
+      "type": "rewrite_explanation",
+      "skillId": "F11",
+      "inputContentId": "EXP_F11_BASIC",
+      "allowedStyles": [
+        "short",
+        "visual",
+        "step_by_step"
+      ],
+      "guardrails": [
+        "Không thay đổi mục tiêu kiến thức.",
+        "Không sinh kiến thức ngoài skillId F11.",
+        "Không đưa đáp án của câu đang kiểm tra nếu learner chưa hoàn thành."
+      ],
+      "fallbackContentId": "EXP_F11_BASIC"
+    },
+    {
+      "id": "AI_GENERATE_F11_VARIANT",
+      "type": "generate_question_variant",
+      "skillId": "F11",
+      "baseQuestionId": "P_F11_002",
+      "constraints": {
+        "questionType": "multiple_choice",
+        "denominatorMax": 12,
+        "singleCorrectAnswer": true,
+        "mustIncludeValidation": true,
+        "mustIncludeErrorMappings": true
+      },
+      "validator": {
+        "requiredFields": [
+          "id",
+          "skillId",
+          "purpose",
+          "type",
+          "prompt",
+          "options",
+          "validation"
+        ],
+        "allowedPurpose": "practice",
+        "allowedErrorPatterns": [
+          "ADD_DENOMINATORS",
+          "SWAP_MULTIPLIERS",
+          "CHANGE_DENOMINATOR_ONLY",
+          "USES_PRODUCT_INSTEAD_OF_LCM"
+        ]
+      },
+      "fallbackQuestionIds": [
+        "P_F11_001",
+        "P_F11_002"
+      ]
+    },
+    {
+      "id": "AI_HINT_FROM_DIAGNOSIS",
+      "type": "generate_hint",
+      "skillId": "F11",
+      "source": "diagnostic_engine",
+      "allowedInputs": [
+        "rootGapSkillId",
+        "confidence",
+        "evidence",
+        "lastErrorPattern"
+      ],
+      "guardrails": [
+        "Chỉ diễn giải từ evidence của diagnostic engine.",
+        "Không tự kết luận rootGap mới.",
+        "Gợi ý ngắn, không quá 2 câu."
+      ],
+      "fallbackMessage": "Hãy thử tìm mẫu số chung trước, rồi đổi từng phân số về mẫu số đó."
+    }
+  ]
+}

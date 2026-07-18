@@ -1,0 +1,57 @@
+[
+  {
+    "id": "SC_MINH_F11",
+    "studentId": "student-001",
+    "description": "Minh làm sai phương trình chứa phân số do thiếu quy đồng mẫu số.",
+    "triggerQuestionId": "Q_E01_001",
+    "triggerAnswer": { "type": "multiple_choice", "value": "B" },
+    "expectedErrorPattern": "ADD_DENOMINATORS",
+    "diagnosticAnswers": [
+      { "questionId": "DQ_F08_001", "answer": "A", "expectedCorrect": true },
+      { "questionId": "DQ_F11_002", "answer": "B", "expectedCorrect": false },
+      { "questionId": "DQ_F11_003", "answer": "D", "expectedCorrect": false }
+    ],
+    "expectedDiagnosis": {
+      "classification": "knowledge_gap",
+      "rootGapSkillId": "F11",
+      "confidenceMin": 0.8
+    },
+    "expectedLearningPathId": "lp-001"
+  },
+  {
+    "id": "SC_LAN_R02",
+    "studentId": "student-002",
+    "description": "Lan sai quy tắc dấu khi tính số hữu tỉ.",
+    "triggerQuestionId": "DQ_R02_001",
+    "triggerAnswer": { "type": "multiple_choice", "value": "B" },
+    "expectedErrorPattern": "SIGN_RULE_ERROR",
+    "diagnosticAnswers": [
+      { "questionId": "DQ_F14_001", "answer": "B", "expectedCorrect": true },
+      { "questionId": "DQ_R02_001", "answer": "B", "expectedCorrect": false }
+    ],
+    "expectedDiagnosis": {
+      "classification": "knowledge_gap",
+      "rootGapSkillId": "R02",
+      "confidenceMin": 0.75
+    },
+    "expectedLearningPathId": "lp-r02-001"
+  },
+  {
+    "id": "SC_NAM_CARELESS",
+    "studentId": "student-003",
+    "description": "Nam có lịch sử thành thạo, sai một câu do bất cẩn và phục hồi ngay.",
+    "triggerQuestionId": "Q_E01_001",
+    "triggerAnswer": { "type": "multiple_choice", "value": "C" },
+    "expectedErrorPattern": "CARELESS_FAST_ANSWER",
+    "diagnosticAnswers": [
+      { "questionId": "DQ_F11_002", "answer": "C", "expectedCorrect": true },
+      { "questionId": "DQ_F14_001", "answer": "B", "expectedCorrect": true }
+    ],
+    "expectedDiagnosis": {
+      "classification": "careless_mistake",
+      "rootGapSkillId": null,
+      "confidenceMin": 0.75
+    },
+    "expectedLearningPathId": null
+  }
+]

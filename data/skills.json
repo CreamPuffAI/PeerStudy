@@ -1,0 +1,155 @@
+[
+  {
+    "id": "F02",
+    "name": "Hiểu ý nghĩa phân số",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Hiểu phân số biểu diễn một phần của đơn vị hoặc một thương.",
+    "prerequisiteIds": [],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F03",
+    "name": "Tử số và mẫu số, mẫu số khác 0",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Nhận biết tử số, mẫu số và điều kiện mẫu số khác 0.",
+    "prerequisiteIds": ["F02"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F05",
+    "name": "Hiểu độ lớn của phân số",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "So sánh trực quan và ước lượng độ lớn của phân số.",
+    "prerequisiteIds": ["F03"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F06",
+    "name": "Nhận biết hai phân số bằng nhau",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Nhận ra hai phân số biểu diễn cùng một giá trị.",
+    "prerequisiteIds": ["F05"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F07",
+    "name": "Tính chất cơ bản của phân số",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Nhân hoặc chia cả tử và mẫu với cùng một số khác 0 để được phân số bằng phân số ban đầu.",
+    "prerequisiteIds": ["F06"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F08",
+    "name": "Tạo phân số tương đương",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Tạo phân số tương đương bằng cách nhân hoặc chia tử và mẫu với cùng một số khác 0.",
+    "prerequisiteIds": ["F07"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F09",
+    "name": "Rút gọn phân số",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Rút gọn phân số về dạng đơn giản hơn.",
+    "prerequisiteIds": ["F08"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F10",
+    "name": "So sánh phân số cùng mẫu",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "So sánh hai phân số có cùng mẫu số.",
+    "prerequisiteIds": ["F05"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F11",
+    "name": "Quy đồng mẫu số",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Đưa hai hoặc nhiều phân số về cùng mẫu số.",
+    "prerequisiteIds": ["F08"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F12",
+    "name": "So sánh phân số khác mẫu",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Quy đồng hoặc biến đổi để so sánh hai phân số khác mẫu.",
+    "prerequisiteIds": ["F10", "F11"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F13",
+    "name": "Cộng, trừ phân số cùng mẫu",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Cộng hoặc trừ các phân số có cùng mẫu số.",
+    "prerequisiteIds": ["F03"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F14",
+    "name": "Cộng, trừ phân số khác mẫu",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Quy đồng rồi cộng hoặc trừ các phân số khác mẫu.",
+    "prerequisiteIds": ["F11", "F13"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F15",
+    "name": "Nhân phân số",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Nhân tử với tử, mẫu với mẫu khi nhân hai phân số.",
+    "prerequisiteIds": ["F03"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F16",
+    "name": "Nghịch đảo của phân số khác 0",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Tìm phân số nghịch đảo của một phân số khác 0.",
+    "prerequisiteIds": ["F03"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "F17",
+    "name": "Chia cho một phân số khác 0",
+    "grade": 5,
+    "domain": "fractions",
+    "description": "Chia cho một phân số bằng cách nhân với phân số nghịch đảo.",
+    "prerequisiteIds": ["F15", "F16"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "R02",
+    "name": "Phép toán số hữu tỉ",
+    "grade": 7,
+    "domain": "rational_numbers",
+    "description": "Thực hiện phép toán với số hữu tỉ, bao gồm phân số và số âm.",
+    "prerequisiteIds": ["F14", "F17"],
+    "masteryThreshold": 0.8
+  },
+  {
+    "id": "E01",
+    "name": "Phương trình chứa phân số",
+    "grade": 7,
+    "domain": "linear_equations",
+    "description": "Giải phương trình bậc nhất có hệ số hoặc hằng số là phân số.",
+    "prerequisiteIds": ["F14", "R02"],
+    "masteryThreshold": 0.8
+  }
+]

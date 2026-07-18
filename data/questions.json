@@ -1,0 +1,278 @@
+[
+  {
+    "id": "Q_E01_001",
+    "skillId": "E01",
+    "purpose": "target",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Giải phương trình x/3 + 1/2 = 5/6.",
+    "options": [
+      { "id": "A", "text": "x = 1" },
+      { "id": "B", "text": "x = 2" },
+      { "id": "C", "text": "x = 1/3" },
+      { "id": "D", "text": "x = 3" }
+    ],
+    "validation": { "correctAnswer": "A" },
+    "errorMappings": {
+      "B": "ADD_DENOMINATORS",
+      "C": "EQUATION_FRACTION_TRANSFORM_ERROR",
+      "D": "ADD_DENOMINATORS"
+    }
+  },
+  {
+    "id": "Q_E01_002",
+    "skillId": "E01",
+    "purpose": "target",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Giải phương trình x/4 + 1/2 = 3/4.",
+    "options": [
+      { "id": "A", "text": "x = 1" },
+      { "id": "B", "text": "x = 2" },
+      { "id": "C", "text": "x = 1/4" },
+      { "id": "D", "text": "x = 4" }
+    ],
+    "validation": { "correctAnswer": "A" },
+    "errorMappings": {
+      "B": "ADD_DENOMINATORS",
+      "C": "EQUATION_FRACTION_TRANSFORM_ERROR",
+      "D": "INVERT_OPERATION_ERROR"
+    }
+  },
+  {
+    "id": "Q_E01_RETRY_001",
+    "skillId": "E01",
+    "purpose": "target",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Làm lại: Giải phương trình x/3 + 1/2 = 5/6.",
+    "options": [
+      { "id": "A", "text": "x = 1" },
+      { "id": "B", "text": "x = 2" },
+      { "id": "C", "text": "x = 1/3" },
+      { "id": "D", "text": "x = 3" }
+    ],
+    "validation": { "correctAnswer": "A" },
+    "errorMappings": {
+      "B": "ADD_DENOMINATORS",
+      "C": "EQUATION_FRACTION_TRANSFORM_ERROR",
+      "D": "ADD_DENOMINATORS"
+    }
+  },
+  {
+    "id": "DQ_F08_001",
+    "skillId": "F08",
+    "purpose": "diagnostic",
+    "type": "multiple_choice",
+    "difficulty": 1,
+    "prompt": "Phân số nào tương đương với 1/2?",
+    "options": [
+      { "id": "A", "text": "2/4" },
+      { "id": "B", "text": "2/3" },
+      { "id": "C", "text": "1/4" },
+      { "id": "D", "text": "3/2" }
+    ],
+    "validation": { "correctAnswer": "A" },
+    "errorMappings": {
+      "B": "EQUIVALENT_FRACTION_MISCONCEPTION",
+      "C": "MULTIPLY_DENOMINATOR_ONLY",
+      "D": "INVERT_FRACTION"
+    }
+  },
+  {
+    "id": "DQ_F08_002",
+    "skillId": "F08",
+    "purpose": "diagnostic",
+    "type": "multiple_choice",
+    "difficulty": 1,
+    "prompt": "Muốn biến 2/3 thành phân số tương đương có mẫu số 12, tử số phải là bao nhiêu?",
+    "options": [
+      { "id": "A", "text": "4" },
+      { "id": "B", "text": "6" },
+      { "id": "C", "text": "8" },
+      { "id": "D", "text": "10" }
+    ],
+    "validation": { "correctAnswer": "C" },
+    "errorMappings": {
+      "A": "MULTIPLY_DENOMINATOR_ONLY",
+      "B": "ADD_SAME_AMOUNT_TO_NUMERATOR",
+      "D": "ADD_DENOMINATORS"
+    }
+  },
+  {
+    "id": "DQ_F11_001",
+    "skillId": "F11",
+    "purpose": "diagnostic",
+    "type": "multiple_choice",
+    "difficulty": 1,
+    "prompt": "Mẫu số chung nhỏ nhất của 2 và 3 là bao nhiêu?",
+    "options": [
+      { "id": "A", "text": "5" },
+      { "id": "B", "text": "6" },
+      { "id": "C", "text": "8" },
+      { "id": "D", "text": "12" }
+    ],
+    "validation": { "correctAnswer": "B" },
+    "errorMappings": {
+      "A": "ADD_DENOMINATORS",
+      "C": "INCOMPLETE_MULTIPLE",
+      "D": "USES_PRODUCT_WHEN_LCM_IS_ENOUGH"
+    }
+  },
+  {
+    "id": "DQ_F11_002",
+    "skillId": "F11",
+    "purpose": "diagnostic",
+    "type": "multiple_choice",
+    "difficulty": 1,
+    "prompt": "Mẫu số chung nhỏ nhất của 4 và 6 là bao nhiêu?",
+    "options": [
+      { "id": "A", "text": "8" },
+      { "id": "B", "text": "10" },
+      { "id": "C", "text": "12" },
+      { "id": "D", "text": "24" }
+    ],
+    "validation": { "correctAnswer": "C" },
+    "errorMappings": {
+      "A": "INCOMPLETE_MULTIPLE",
+      "B": "ADD_DENOMINATORS",
+      "D": "USES_PRODUCT_INSTEAD_OF_LCM"
+    }
+  },
+  {
+    "id": "DQ_F11_003",
+    "skillId": "F11",
+    "purpose": "diagnostic",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Sau khi quy đồng 1/2 và 1/3 về mẫu số 6, ta được cặp phân số nào?",
+    "options": [
+      { "id": "A", "text": "2/6 và 3/6" },
+      { "id": "B", "text": "3/6 và 2/6" },
+      { "id": "C", "text": "1/6 và 1/6" },
+      { "id": "D", "text": "2/5 và 3/5" }
+    ],
+    "validation": { "correctAnswer": "B" },
+    "errorMappings": {
+      "A": "SWAP_MULTIPLIERS",
+      "C": "CHANGE_DENOMINATOR_ONLY",
+      "D": "ADD_DENOMINATORS"
+    }
+  },
+  {
+    "id": "DQ_F14_001",
+    "skillId": "F14",
+    "purpose": "diagnostic",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Tính 1/2 + 1/3.",
+    "options": [
+      { "id": "A", "text": "2/5" },
+      { "id": "B", "text": "5/6" },
+      { "id": "C", "text": "1/5" },
+      { "id": "D", "text": "3/6" }
+    ],
+    "validation": { "correctAnswer": "B" },
+    "errorMappings": {
+      "A": "ADD_NUMERATORS_AND_DENOMINATORS",
+      "C": "SUBTRACT_INSTEAD_OF_ADD",
+      "D": "INCOMPLETE_FRACTION_ADDITION"
+    }
+  },
+  {
+    "id": "DQ_R02_001",
+    "skillId": "R02",
+    "purpose": "diagnostic",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Tính -1/2 + 1/3.",
+    "options": [
+      { "id": "A", "text": "-1/6" },
+      { "id": "B", "text": "1/6" },
+      { "id": "C", "text": "-2/5" },
+      { "id": "D", "text": "2/5" }
+    ],
+    "validation": { "correctAnswer": "A" },
+    "errorMappings": {
+      "B": "SIGN_RULE_ERROR",
+      "C": "ADD_NUMERATORS_AND_DENOMINATORS",
+      "D": "SIGN_RULE_ERROR"
+    }
+  },
+  {
+    "id": "P_F11_001",
+    "skillId": "F11",
+    "purpose": "practice",
+    "type": "multiple_choice",
+    "difficulty": 1,
+    "prompt": "Mẫu số chung nhỏ nhất của 3 và 6 là bao nhiêu?",
+    "options": [
+      { "id": "A", "text": "3" },
+      { "id": "B", "text": "6" },
+      { "id": "C", "text": "9" },
+      { "id": "D", "text": "18" }
+    ],
+    "validation": { "correctAnswer": "B" },
+    "errorMappings": {
+      "C": "ADD_DENOMINATORS",
+      "D": "USES_PRODUCT_INSTEAD_OF_LCM"
+    }
+  },
+  {
+    "id": "P_F11_002",
+    "skillId": "F11",
+    "purpose": "practice",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Quy đồng 2/3 và 1/4 về mẫu số 12. Cặp phân số đúng là gì?",
+    "options": [
+      { "id": "A", "text": "8/12 và 3/12" },
+      { "id": "B", "text": "6/12 và 4/12" },
+      { "id": "C", "text": "2/12 và 1/12" },
+      { "id": "D", "text": "5/12 và 5/12" }
+    ],
+    "validation": { "correctAnswer": "A" },
+    "errorMappings": {
+      "B": "SWAP_MULTIPLIERS",
+      "C": "CHANGE_DENOMINATOR_ONLY",
+      "D": "ADD_DENOMINATORS"
+    }
+  },
+  {
+    "id": "P_F11_003",
+    "skillId": "F11",
+    "purpose": "practice",
+    "type": "numeric",
+    "difficulty": 2,
+    "prompt": "Mẫu số chung nhỏ nhất của 5 và 10 là bao nhiêu?",
+    "validation": {
+      "correctAnswer": "10",
+      "acceptedAnswers": ["10"],
+      "tolerance": 0
+    },
+    "errorMappings": {
+      "15": "ADD_DENOMINATORS",
+      "50": "USES_PRODUCT_INSTEAD_OF_LCM"
+    }
+  },
+  {
+    "id": "CP_F11_001",
+    "skillId": "F11",
+    "purpose": "checkpoint",
+    "type": "multiple_choice",
+    "difficulty": 2,
+    "prompt": "Quy đồng 3/4 và 1/6 về mẫu số 12. Cặp phân số đúng là gì?",
+    "options": [
+      { "id": "A", "text": "9/12 và 2/12" },
+      { "id": "B", "text": "6/12 và 4/12" },
+      { "id": "C", "text": "3/12 và 1/12" },
+      { "id": "D", "text": "4/10 và 6/10" }
+    ],
+    "validation": { "correctAnswer": "A" },
+    "errorMappings": {
+      "B": "SWAP_MULTIPLIERS",
+      "C": "CHANGE_DENOMINATOR_ONLY",
+      "D": "ADD_DENOMINATORS"
+    }
+  }
+]

@@ -1,0 +1,26 @@
+[
+  {
+    "id": "EXP_F08_BASIC",
+    "skillId": "F08",
+    "style": "step_by_step",
+    "content": "Hai phân số tương đương có cùng giá trị. Muốn tạo phân số tương đương, nhân cả tử số và mẫu số với cùng một số khác 0."
+  },
+  {
+    "id": "EXP_F11_BASIC",
+    "skillId": "F11",
+    "style": "step_by_step",
+    "content": "Muốn cộng hoặc so sánh hai phân số khác mẫu, trước hết cần đưa chúng về cùng một mẫu số. Mẫu số chung nên là bội chung nhỏ nhất để phép tính gọn hơn."
+  },
+  {
+    "id": "EXP_F14_BASIC",
+    "skillId": "F14",
+    "style": "step_by_step",
+    "content": "Với hai phân số khác mẫu, hãy quy đồng trước, sau đó cộng hoặc trừ tử số và giữ nguyên mẫu số chung."
+  },
+  {
+    "id": "EXP_R02_SIGN",
+    "skillId": "R02",
+    "style": "step_by_step",
+    "content": "Khi tính với số hữu tỉ âm, hãy xử lý dấu trước rồi thực hiện phép tính với phần phân số."
+  }
+]
