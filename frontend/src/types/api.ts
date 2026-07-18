@@ -54,10 +54,10 @@ export interface Question {
   skillId: string
   purpose: QuestionPurpose
   type: QuestionType
-  difficulty: number
+  difficulty?: number
   prompt: string
   options?: QuestionOption[]
-  validation: QuestionValidation
+  validation?: QuestionValidation
   errorMappings?: Record<string, string>
 }
 
@@ -79,6 +79,13 @@ export interface DiagnosticRule {
   candidateSkills: DiagnosticRuleCandidate[]
 }
 
+export interface WorkedExample {
+  id: string
+  skillId: string
+  title: string
+  steps: string[]
+}
+
 export interface LearningPackage {
   packageId: string
   version: number
@@ -87,8 +94,10 @@ export interface LearningPackage {
   skills: Skill[]
   questions: Question[]
   explanations: Explanation[]
-  diagnosticRulesVersion: number
-  diagnosticRules: DiagnosticRule[]
+  workedExamples?: WorkedExample[]
+  learningPaths?: LearningPath[]
+  diagnosticRulesVersion?: number
+  diagnosticRules?: DiagnosticRule[]
 }
 
 export interface AttemptRequest {

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Brain, ChevronRight, ChevronRightIcon, TrendingUp, AlertTriangle, ArrowRight } from 'lucide-react'
+import { Brain, ChevronRight, TrendingUp, AlertTriangle, ArrowRight } from 'lucide-react'
 import type { DiagnosisSession, AttemptResponse, NextAction } from '../../types/api'
-import { getDiagnosisSession, completeDiagnosis, submitAttempt } from '../../lib/api'
+import { getDiagnosisSession, submitAttempt } from '../../lib/api'
 import { QuestionCard } from './QuestionCard'
 import { Card, CardHeader } from '../ui/Card'
 import { Button } from '../ui/Button'
@@ -69,10 +69,10 @@ export function DiagnosticView({ sessionId, studentId, packageId, onComplete }: 
       if (res.next.action === 'continue_diagnostic' && res.next.questionId) {
         setNextAction({ action: 'continue_diagnostic' })
         setShowNextButton(true)
-      } else if (res.next.action === 'start_learning_path') {
-        const completed = await completeDiagnosis(sessionId, 'F11')
+      } else if (res.next.action === 'start_learning_path' || res.next.action === 'continue_practice' || res.next.action === 'completed') {
+        const completed = await getDiagnosisSession(sessionId)
         setSession(completed)
-        setNextAction({ action: 'start_learning_path', learningPathId: completed.learningPath?.id })
+        setNextAction({ action: res.next.action, learningPathId: res.next.learningPathId ?? completed.learningPath?.id })
         setShowNextButton(true)
       } else {
         setNextAction({ action: res.next.action, learningPathId: res.next.learningPathId })

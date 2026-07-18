@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { GraduationCap, ArrowLeft, ArrowRight, BookOpen, Target, Trophy, Clock } from 'lucide-react'
-import type { NextAction } from '../../types/api'
-import { getQuestionById, demoLearningPaths } from '../../lib/mockData'
+import type { NextAction, LearningPackage, LearningPath, Question } from '../../types/api'
+import { fetchLearningPackage } from '../../lib/api'
 import { submitAttempt } from '../../lib/api'
 import { QuestionCard } from './QuestionCard'
 import { DiagnosticView } from './DiagnosticView'
@@ -16,6 +16,8 @@ interface StudentViewProps {
 }
 
 export function StudentView({ studentId, packageId, onBack }: StudentViewProps) {
+  const [pkg, setPkg] = useState<LearningPackage | null>(null)
+  const [loading, setLoading] = useState(true)
   const [screen, setScreen] = useState<'menu' | 'practice' | 'diagnostic' | 'learning' | 'completed'>('menu')
   const [questionId, setQuestionId] = useState('Q_E01_001')
   const [diagnosisSessionId, setDiagnosisSessionId] = useState<string | null>(null)
@@ -24,7 +26,24 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
   const [submitted, setSubmitted] = useState(false)
   const [nextQuestionId, setNextQuestionId] = useState<string | null>(null)
 
-  const question = getQuestionById(questionId)
+  useEffect(() => {
+    let cancelled = false
+    fetchLearningPackage(packageId)
+      .then(data => { if (!cancelled) setPkg(data) })
+      .catch(() => { if (!cancelled) setPkg(null) })
+      .finally(() => { if (!cancelled) setLoading(false) })
+    return () => { cancelled = true }
+  }, [packageId])
+
+  const getQuestionById = useCallback((id: string): Question | undefined => {
+    return pkg?.questions.find(q => q.id === id)
+  }, [pkg])
+
+  const getLearningPathById = useCallback((id: string): LearningPath | undefined => {
+    return pkg?.learningPaths?.find(p => p.id === id)
+  }, [pkg])
+
+  const question = pkg ? getQuestionById(questionId) : undefined
 
   async function handleAnswer(answer: string) {
     if (!question || submitted) return
@@ -64,7 +83,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
         setDiagnosisSessionId(dsid)
         setTimeout(() => setScreen('diagnostic'), 1200)
       } else if (res.next.action === 'start_learning_path') {
-        const lpid = res.next.learningPathId ?? demoLearningPaths[0]?.id
+        const lpid = res.next.learningPathId ?? pkg?.learningPaths?.[0]?.id
         setLearningPathId(lpid ?? null)
         setTimeout(() => setScreen('learning'), 1200)
       } else if (res.next.action === 'continue_practice' && res.next.questionId) {
@@ -103,6 +122,21 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
 
   function handleLearningComplete() {
     setScreen('completed')
+  }
+
+  if (loading) {
+    return (
+      <div className="text-center py-12 text-slate-500">Đang tải gói học tập...</div>
+    )
+  }
+
+  if (!pkg) {
+    return (
+      <div className="text-center py-12 text-slate-500">
+        <p>Không thể tải gói học tập.</p>
+        <p className="text-sm mt-1">Đảm bảo backend đang chạy tại localhost:8000.</p>
+      </div>
+    )
   }
 
   return (
@@ -226,6 +260,7 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
           pathId={learningPathId}
           studentId={studentId}
           packageId={packageId}
+          learningPackage={pkg}
           onComplete={handleLearningComplete}
         />
       )}
@@ -254,19 +289,21 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
   )
 }
 
-function LearningPathWrapper({ pathId, studentId, packageId, onComplete }: {
+function LearningPathWrapper({ pathId, studentId, packageId, learningPackage, onComplete }: {
   pathId: string
   studentId: string
   packageId: string
+  learningPackage: LearningPackage
   onComplete: () => void
 }) {
-  const path = demoLearningPaths.find(p => p.id === pathId)
+  const path = learningPackage.learningPaths?.find(p => p.id === pathId)
   if (!path) return <Card><p>Không tìm thấy lộ trình.</p></Card>
   return (
     <LearningPathView
       path={path}
       studentId={studentId}
       packageId={packageId}
+      learningPackage={learningPackage}
       onComplete={onComplete}
     />
   )

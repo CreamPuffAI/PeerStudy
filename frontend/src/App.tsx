@@ -1,16 +1,18 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { GraduationCap, LayoutDashboard, Wifi, WifiOff, RefreshCw } from 'lucide-react'
-import { classInsights } from './lib/mockData'
+import type { ClassInsights } from './types/api'
 import { TeacherDashboard } from './components/teacher/TeacherDashboard'
 import { StudentView } from './components/student/StudentView'
 import { getUnsyncedEvents, markEventsSynced, clearSyncedEvents } from './lib/db'
-import { syncEvents } from './lib/api'
+import { syncEvents, getClassInsights } from './lib/api'
 
 export default function App() {
   const [offline, setOffline] = useState(!navigator.onLine)
   const [activeRole, setActiveRole] = useState<'student' | 'teacher'>('teacher')
   const [syncing, setSyncing] = useState(false)
   const [pendingEvents, setPendingEvents] = useState(0)
+  const [classInsights, setClassInsights] = useState<ClassInsights | null>(null)
+  const [classInsightsError, setClassInsightsError] = useState<string | null>(null)
   const syncingRef = useRef(false)
 
   const syncPendingEvents = useCallback(async () => {
@@ -85,6 +87,20 @@ export default function App() {
     const interval = setInterval(loadPendingCount, 30000)
     
     return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    async function load() {
+      try {
+        const data = await getClassInsights('class-7a', 'math-fractions-v1')
+        if (!cancelled) setClassInsights(data)
+      } catch (err) {
+        if (!cancelled) setClassInsightsError(err instanceof Error ? err.message : 'Lỗi tải dữ liệu')
+      }
+    }
+    load()
+    return () => { cancelled = true }
   }, [])
 
   return (
@@ -168,7 +184,16 @@ export default function App() {
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
         {activeRole === 'teacher' && (
-          <TeacherDashboard data={classInsights} />
+          classInsights ? (
+            <TeacherDashboard data={classInsights} />
+          ) : classInsightsError ? (
+            <div className="text-center py-12 text-slate-500">
+              <p>Không thể tải dữ liệu lớp học.</p>
+              <p className="text-sm mt-1">{classInsightsError}</p>
+            </div>
+          ) : (
+            <div className="text-center py-12 text-slate-500">Đang tải dữ liệu lớp học...</div>
+          )
         )}
 
         {activeRole === 'student' && (

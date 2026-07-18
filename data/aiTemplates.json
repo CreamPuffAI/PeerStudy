@@ -1,0 +1,52 @@
+[
+  {
+    "id": "AI_EXPLAIN_F11_STEP_BY_STEP",
+    "type": "rewrite_explanation",
+    "skillId": "F11",
+    "inputContentId": "EXP_F11_BASIC",
+    "allowedStyles": ["short", "visual", "step_by_step"],
+    "guardrails": [
+      "Không thay đổi mục tiêu kiến thức.",
+      "Không sinh kiến thức ngoài skillId F11.",
+      "Không đưa đáp án của câu đang kiểm tra nếu learner chưa hoàn thành."
+    ],
+    "fallbackContentId": "EXP_F11_BASIC"
+  },
+  {
+    "id": "AI_GENERATE_F11_VARIANT",
+    "type": "generate_question_variant",
+    "skillId": "F11",
+    "baseQuestionId": "P_F11_002",
+    "constraints": {
+      "questionType": "multiple_choice",
+      "denominatorMax": 12,
+      "singleCorrectAnswer": true,
+      "mustIncludeValidation": true,
+      "mustIncludeErrorMappings": true
+    },
+    "validator": {
+      "requiredFields": ["id", "skillId", "purpose", "type", "prompt", "options", "validation"],
+      "allowedPurpose": "practice",
+      "allowedErrorPatterns": [
+        "ADD_DENOMINATORS",
+        "SWAP_MULTIPLIERS",
+        "CHANGE_DENOMINATOR_ONLY",
+        "USES_PRODUCT_INSTEAD_OF_LCM"
+      ]
+    },
+    "fallbackQuestionIds": ["P_F11_001", "P_F11_002"]
+  },
+  {
+    "id": "AI_HINT_FROM_DIAGNOSIS",
+    "type": "generate_hint",
+    "skillId": "F11",
+    "source": "diagnostic_engine",
+    "allowedInputs": ["rootGapSkillId", "confidence", "evidence", "lastErrorPattern"],
+    "guardrails": [
+      "Chỉ diễn giải từ evidence của diagnostic engine.",
+      "Không tự kết luận rootGap mới.",
+      "Gợi ý ngắn, không quá 2 câu."
+    ],
+    "fallbackMessage": "Hãy thử tìm mẫu số chung trước, rồi đổi từng phân số về mẫu số đó."
+  }
+]

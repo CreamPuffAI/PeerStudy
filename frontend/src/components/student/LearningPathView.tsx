@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { BookOpen, PenTool, CheckCircle, ArrowRight, RotateCcw, Lightbulb, Eye } from 'lucide-react'
-import type { LearningPath, LearningStep, NextAction } from '../../types/api'
-import { getExplanationById, getQuestionById } from '../../lib/mockData'
+import type { LearningPath, LearningPackage, NextAction, Question, Explanation } from '../../types/api'
 import { submitAttempt } from '../../lib/api'
 import { QuestionCard } from './QuestionCard'
 import { Card, CardHeader } from '../ui/Card'
@@ -12,10 +11,11 @@ interface LearningPathViewProps {
   path: LearningPath
   studentId: string
   packageId: string
+  learningPackage: LearningPackage
   onComplete: (nextAction: NextAction) => void
 }
 
-export function LearningPathView({ path, studentId, packageId, onComplete }: LearningPathViewProps) {
+export function LearningPathView({ path, studentId, packageId, learningPackage, onComplete }: LearningPathViewProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'error'; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
@@ -23,6 +23,12 @@ export function LearningPathView({ path, studentId, packageId, onComplete }: Lea
 
   const currentStep = path.steps[currentStepIndex]
   const progress = ((completedSteps.size) / path.steps.length) * 100
+
+  const getQuestionById = (id: string): Question | undefined =>
+    learningPackage.questions.find(q => q.id === id)
+
+  const getExplanationById = (id: string): Explanation | undefined =>
+    learningPackage.explanations.find(e => e.id === id)
 
   async function handleStepComplete() {
     const newCompleted = new Set(completedSteps)
@@ -103,7 +109,7 @@ export function LearningPathView({ path, studentId, packageId, onComplete }: Lea
     <div className="space-y-4">
       <Card>
         <CardHeader
-          title={path.id === 'lp-001' ? 'Lộ trình: Quy đồng mẫu số' : 'Lộ trình phục hồi'}
+          title={`Lộ trình: ${learningPackage.skills.find(s => s.id === path.rootGapSkillId)?.name ?? 'Phục hồi'}`}
           subtitle={`Thời gian dự kiến: ${path.estimatedMinutes} phút`}
         />
         <ProgressBar value={progress} max={100} showLabel color="success" label="Tiến độ" />
@@ -135,11 +141,17 @@ export function LearningPathView({ path, studentId, packageId, onComplete }: Lea
         </div>
 
         {currentStep.type === 'micro_explanation' && currentStep.contentId && (
-          <ExplanationStep contentId={currentStep.contentId} onComplete={handleStepComplete} />
+          <ExplanationStep
+            explanation={getExplanationById(currentStep.contentId)}
+            onComplete={handleStepComplete}
+          />
         )}
 
         {currentStep.type === 'worked_example' && currentStep.contentId && (
-          <WorkedExampleStep contentId={currentStep.contentId} onComplete={handleStepComplete} />
+          <WorkedExampleStep
+            explanation={getExplanationById(currentStep.contentId)}
+            onComplete={handleStepComplete}
+          />
         )}
 
         {(currentStep.type === 'practice' || currentStep.type === 'checkpoint' || currentStep.type === 'return_to_target') && currentStep.questionIds && (
@@ -164,8 +176,7 @@ export function LearningPathView({ path, studentId, packageId, onComplete }: Lea
   )
 }
 
-function ExplanationStep({ contentId, onComplete }: { contentId: string; onComplete: () => void }) {
-  const explanation = getExplanationById(contentId)
+function ExplanationStep({ explanation, onComplete }: { explanation?: Explanation; onComplete: () => void }) {
   return (
     <div className="space-y-4">
       <div className="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-slate-800 leading-relaxed">
@@ -182,7 +193,7 @@ function ExplanationStep({ contentId, onComplete }: { contentId: string; onCompl
   )
 }
 
-function WorkedExampleStep({ contentId, onComplete }: { contentId: string; onComplete: () => void }) {
+function WorkedExampleStep({ explanation, onComplete }: { explanation?: Explanation; onComplete: () => void }) {
   return (
     <div className="space-y-4">
       <div className="p-5 rounded-2xl bg-blue-50 border border-blue-100">
@@ -191,16 +202,7 @@ function WorkedExampleStep({ contentId, onComplete }: { contentId: string; onCom
           Ví dụ mẫu
         </div>
         <div className="space-y-3 text-slate-800">
-          <p className="font-medium">Bài toán: Cộng hai phân số 1/4 + 1/6</p>
-          <div className="space-y-2 text-sm">
-            <p><strong>Bước 1:</strong> Tìm mẫu số chung nhỏ nhất của 4 và 6.</p>
-            <p>BCNN(4, 6) = 12</p>
-            <p><strong>Bước 2:</strong> Quy đồng mẫu số.</p>
-            <p>1/4 = 3/12 ; 1/6 = 2/12</p>
-            <p><strong>Bước 3:</strong> Cộng hai phân số đã quy đồng.</p>
-            <p>3/12 + 2/12 = 5/12</p>
-          </div>
-          <p className="font-medium text-blue-800">Kết quả: 1/4 + 1/6 = 5/12</p>
+          <p className="text-base leading-relaxed">{explanation?.content ?? 'Nội dung ví dụ mẫu'}</p>
         </div>
       </div>
       <Button onClick={onComplete}>
