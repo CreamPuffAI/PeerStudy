@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { BookOpen, PenTool, CheckCircle, ArrowRight, RotateCcw, Lightbulb, Eye } from 'lucide-react'
 import type { LearningPath, LearningPackage, NextAction, Question, Explanation } from '../../types/api'
 import { submitAttempt } from '../../lib/api'
@@ -17,12 +17,25 @@ interface LearningPathViewProps {
 
 export function LearningPathView({ path, studentId, packageId, learningPackage, onComplete }: LearningPathViewProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0)
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [feedback, setFeedback] = useState<{ type: 'success' | 'neutral' | 'error'; message: string } | null>(null)
   const [submitted, setSubmitted] = useState(false)
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set())
 
+  const answerStartRef = useRef(Date.now())
+  const attemptCountsRef = useRef<Record<string, number>>({})
+  const advancingRef = useRef(false)
+
   const currentStep = path.steps[currentStepIndex]
   const progress = ((completedSteps.size) / path.steps.length) * 100
+
+  useEffect(() => {
+    answerStartRef.current = Date.now()
+  }, [currentStep?.id])
+
+  useEffect(() => {
+    setCurrentQuestionIndex(0)
+  }, [currentStepIndex])
 
   const getQuestionById = (id: string): Question | undefined =>
     learningPackage.questions.find(q => q.id === id)
@@ -30,7 +43,16 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
   const getExplanationById = (id: string): Explanation | undefined =>
     learningPackage.explanations.find(e => e.id === id)
 
-  async function handleStepComplete() {
+  const currentQuestionId = currentStep?.questionIds?.[currentQuestionIndex]
+  const currentQuestion = currentQuestionId ? getQuestionById(currentQuestionId) : undefined
+  const isLastQuestionInStep = currentStep?.questionIds
+    ? currentQuestionIndex >= currentStep.questionIds.length - 1
+    : true
+
+  function advanceStep() {
+    if (advancingRef.current) return
+    advancingRef.current = true
+
     const newCompleted = new Set(completedSteps)
     newCompleted.add(currentStep.id)
     setCompletedSteps(newCompleted)
@@ -42,26 +64,36 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
     } else {
       setTimeout(() => onComplete('completed'), 800)
     }
+    advancingRef.current = false
+  }
+
+  function handleStepComplete() {
+    if (advancingRef.current) return
+    advanceStep()
   }
 
   async function handleAnswer(answer: string) {
-    if (!currentStep.questionIds || currentStep.questionIds.length === 0 || submitted) return
+    if (!currentQuestion || submitted || advancingRef.current) return
     setSubmitted(true)
     setFeedback(null)
 
-    const questionId = currentStep.questionIds[0]
     try {
+      const responseTimeMs = Date.now() - answerStartRef.current
+      const attemptKey = currentQuestion.id
+      const currentAttempt = attemptCountsRef.current[attemptKey] ?? 0
+      attemptCountsRef.current[attemptKey] = currentAttempt + 1
+
       const response = await submitAttempt({
         eventId: crypto.randomUUID(),
         studentId,
         classId: 'class-7a',
         packageId,
-        questionId,
-        purpose: currentStep.type === 'checkpoint' ? 'checkpoint' : 'practice',
+        questionId: currentQuestion.id,
+        purpose: currentQuestion.purpose,
         context: { learningPathId: path.id, learningStepId: currentStep.id },
-        answer: { type: 'multiple_choice', value: answer },
-        responseTimeMs: 4200,
-        attemptNumber: 1,
+        answer: { type: currentQuestion.type, value: answer },
+        responseTimeMs,
+        attemptNumber: currentAttempt + 1,
         deviceTimestamp: new Date().toISOString(),
         offlineCreated: !navigator.onLine
       })
@@ -73,7 +105,15 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
       })
 
       if (res.correct || currentStep.type === 'practice') {
-        setTimeout(handleStepComplete, 1200)
+        if (isLastQuestionInStep) {
+          setTimeout(advanceStep, 1200)
+        } else {
+          setTimeout(() => {
+            setCurrentQuestionIndex(currentQuestionIndex + 1)
+            setFeedback(null)
+            setSubmitted(false)
+          }, 1200)
+        }
       } else {
         setSubmitted(false)
       }
@@ -154,22 +194,14 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
           />
         )}
 
-        {(currentStep.type === 'practice' || currentStep.type === 'checkpoint' || currentStep.type === 'return_to_target') && currentStep.questionIds && (
-          <div>
-            {currentStep.questionIds.map(qid => {
-              const q = getQuestionById(qid)
-              if (!q) return null
-              return (
-                <QuestionCard
-                  key={qid}
-                  question={q}
-                  onSubmit={handleAnswer}
-                  feedback={feedback}
-                  disabled={submitted}
-                />
-              )
-            })}
-          </div>
+        {(currentStep.type === 'practice' || currentStep.type === 'checkpoint' || currentStep.type === 'return_to_target') && currentQuestion && (
+          <QuestionCard
+            key={currentQuestion.id}
+            question={currentQuestion}
+            onSubmit={handleAnswer}
+            feedback={feedback}
+            disabled={submitted}
+          />
         )}
       </Card>
     </div>

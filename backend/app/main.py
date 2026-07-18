@@ -780,6 +780,32 @@ def _attempt_id() -> str:
     return f"attempt-{uuid4().hex[:8]}"
 
 
+def _next_question_after_correct(question_id: str) -> dict[str, Any]:
+    question = questions_by_id.get(question_id)
+    if question is None:
+        return {"action": "completed"}
+
+    skill_id = question["skillId"]
+    purpose = question["purpose"]
+    current_index = next(
+        (i for i, q in enumerate(questions) if q["id"] == question_id), None
+    )
+    if current_index is None:
+        return {"action": "completed"}
+
+    for candidate in questions[current_index + 1:]:
+        if (
+            candidate["skillId"] == skill_id
+            and candidate["purpose"] == purpose
+            and "RETRY" not in candidate["id"]
+        ):
+            return {
+                "action": "continue_practice",
+                "questionId": candidate["id"],
+            }
+    return {"action": "completed"}
+
+
 def _feedback(correct: bool, question: dict[str, Any]) -> dict[str, str]:
     if correct:
         return {
@@ -959,10 +985,7 @@ def _process_attempt(request: AttemptRequest) -> dict[str, Any]:
             }
         )
     elif correct:
-        response["next"] = {
-            "action": "continue_practice",
-            "questionId": None,
-        }
+        response["next"] = _next_question_after_correct(request.questionId)
     else:
         session = _start_diagnosis_session(request, question, detected_error_pattern)
         next_question = _get_next_diagnostic_question(session)
