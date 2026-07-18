@@ -2,6 +2,7 @@ import { Users, Wifi, WifiOff, TrendingUp, AlertTriangle, Trophy } from 'lucide-
 import type { ClassInsights } from '../../types/api'
 import { Card, CardHeader } from '../ui/Card'
 import { Badge } from '../ui/Badge'
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend } from 'recharts'
 
 interface ClassOverviewProps {
   data: ClassInsights
@@ -85,6 +86,48 @@ export function ClassOverview({ data }: ClassOverviewProps) {
               <Badge variant="success" size="sm">Sau</Badge>
             </div>
           </div>
+        </div>
+      </Card>
+
+      <Card>
+        <CardHeader title="Phân bố học sinh" subtitle="Phân loại theo năng lực hiện tại" />
+        <div className="h-72">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={[
+                  { name: 'Cần hỗ trợ', value: summary.studentsNeedSupport },
+                  { name: 'Đúng tiến độ', value: summary.studentsOnTrack },
+                  { name: 'Vượt trội', value: summary.studentsReadyForAdvanced }
+                ]}
+                cx="50%"
+                cy="40%"
+                innerRadius={55}
+                outerRadius={70}
+                paddingAngle={3}
+                dataKey="value"
+              >
+                {[
+                  { color: '#ef4444' },
+                  { color: '#3b82f6' },
+                  { color: '#10b981' }
+                ].map((entry, index) => (
+                  <Cell key={`pie-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip
+                contentStyle={{ borderRadius: 12, border: '1px solid #e2e8f0', fontSize: 12, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                formatter={(value, name) => [`${value} học sinh`, name]}
+              />
+              <Legend
+                verticalAlign="bottom"
+                align="center"
+                iconType="circle"
+                iconSize={8}
+                wrapperStyle={{ fontSize: 12, paddingTop: 24 }}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </Card>
     </div>
