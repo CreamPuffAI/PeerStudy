@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { GraduationCap, ArrowLeft, ArrowRight } from 'lucide-react'
+import { GraduationCap, ArrowLeft, ArrowRight, BookOpen, Target, Trophy, Clock } from 'lucide-react'
 import type { NextAction } from '../../types/api'
 import { getQuestionById, demoLearningPaths } from '../../lib/mockData'
 import { submitAttempt } from '../../lib/api'
 import { QuestionCard } from './QuestionCard'
 import { DiagnosticView } from './DiagnosticView'
 import { LearningPathView } from './LearningPathView'
-import { Card } from '../ui/Card'
+import { Card, CardHeader } from '../ui/Card'
 import { Button } from '../ui/Button'
 
 interface StudentViewProps {
@@ -16,7 +16,7 @@ interface StudentViewProps {
 }
 
 export function StudentView({ studentId, packageId, onBack }: StudentViewProps) {
-  const [screen, setScreen] = useState<'practice' | 'diagnostic' | 'learning' | 'completed'>('practice')
+  const [screen, setScreen] = useState<'menu' | 'practice' | 'diagnostic' | 'learning' | 'completed'>('menu')
   const [questionId, setQuestionId] = useState('Q_E01_001')
   const [diagnosisSessionId, setDiagnosisSessionId] = useState<string | null>(null)
   const [learningPathId, setLearningPathId] = useState<string | null>(null)
@@ -126,6 +126,69 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
         </div>
       </div>
 
+      {screen === 'menu' && (
+        <div className="space-y-4">
+          <Card>
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center justify-center w-14 h-14 rounded-2xl bg-blue-100 text-blue-700">
+                <BookOpen className="w-7 h-7" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-900">Phương trình chứa phân số</h3>
+                <p className="text-sm text-slate-500">Toán 7 · Kỹ năng E01</p>
+              </div>
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-3 mb-6">
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-100 text-blue-600">
+                  <Target className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Kỹ năng</p>
+                  <p className="text-sm font-semibold text-slate-900">E01</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-amber-100 text-amber-600">
+                  <Clock className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Thời gian</p>
+                  <p className="text-sm font-semibold text-slate-900">~10 phút</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 p-3 rounded-2xl bg-slate-50">
+                <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600">
+                  <Trophy className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Số câu</p>
+                  <p className="text-sm font-semibold text-slate-900">4 câu</p>
+                </div>
+              </div>
+            </div>
+
+            <Button
+              onClick={() => setScreen('practice')}
+              size="lg"
+              className="w-full"
+            >
+              Bắt đầu luyện tập
+              <ArrowRight className="w-4 h-4" />
+            </Button>
+          </Card>
+
+          <Card padding="sm">
+            <CardHeader title="Mục tiêu bài học" />
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Giải phương trình chứa phân số bằng cách tìm giá trị của ẩn x.
+              Hệ thống sẽ tự động phát hiện lỗ hổng kiến thức và tạo lộ trình phù hợp nếu em gặp khó khăn.
+            </p>
+          </Card>
+        </div>
+      )}
+
       {screen === 'practice' && question && (
         <Card>
           <QuestionCard
@@ -175,12 +238,15 @@ export function StudentView({ studentId, packageId, onBack }: StudentViewProps) 
           <h3 className="text-xl font-bold text-slate-900 mb-2">Hoàn thành!</h3>
           <p className="text-slate-600 mb-6">Em đã hoàn thành lộ trình phục hồi kiến thức.</p>
           <Button onClick={() => {
-            setScreen('practice')
-            setQuestionId('Q_E01_RETRY_001')
+            setScreen('menu')
+            setQuestionId('Q_E01_001')
             setSubmitted(false)
             setFeedback(null)
+            setNextQuestionId(null)
+            setDiagnosisSessionId(null)
+            setLearningPathId(null)
           }}>
-            Làm bài tiếp theo
+            Về menu chính
           </Button>
         </Card>
       )}

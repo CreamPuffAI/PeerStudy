@@ -225,7 +225,7 @@ export async function submitAttempt(payload: AttemptRequest): Promise<AttemptRes
       },
       next: {
         action: payload.purpose === 'checkpoint'
-          ? 'return_to_target'
+          ? 'completed'
           : 'continue_practice',
         questionId: getNextQuestionId(question.id)
       },
