@@ -1,8 +1,8 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { BookOpen, PenTool, CheckCircle, ArrowRight, RotateCcw, Lightbulb, Eye } from 'lucide-react'
 import type { LearningPath, LearningPackage, NextAction, Question, Explanation, WorkedExample } from '../../types/api'
 import { ApiError, submitAttempt } from '../../lib/api'
-import { getWorkedExampleById } from '../../lib/learning'
+import { getOrderedLearningSteps, getWorkedExampleById } from '../../lib/learning'
 import { QuestionCard } from './QuestionCard'
 import { AIExplanation } from './AIExplanation'
 import { Card, CardHeader } from '../ui/Card'
@@ -29,8 +29,9 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
   const attemptCountsRef = useRef<Record<string, number>>({})
   const advancingRef = useRef(false)
 
-  const currentStep = path.steps[currentStepIndex]
-  const progress = ((completedSteps.size) / path.steps.length) * 100
+  const orderedSteps = useMemo(() => getOrderedLearningSteps(path.steps), [path.steps])
+  const currentStep = orderedSteps[currentStepIndex]
+  const progress = ((completedSteps.size) / orderedSteps.length) * 100
 
   useEffect(() => {
     answerStartRef.current = Date.now()
@@ -60,7 +61,7 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
     newCompleted.add(currentStep.id)
     setCompletedSteps(newCompleted)
 
-    if (currentStepIndex < path.steps.length - 1) {
+    if (currentStepIndex < orderedSteps.length - 1) {
       setCurrentStepIndex(currentStepIndex + 1)
       setFeedback(null)
       setSubmitted(false)
@@ -163,7 +164,7 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
         <ProgressBar value={progress} max={100} showLabel color="success" label="Tiến độ" />
 
         <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-          {path.steps.map((step, idx) => (
+          {orderedSteps.map((step, idx) => (
             <div
               key={step.id}
               className={`

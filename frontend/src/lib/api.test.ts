@@ -9,7 +9,7 @@ vi.mock('./db', () => ({
 
 import { generateDiagnosisHint, getOfflineDiagnosisHint, rewriteExplanation, submitAttempt } from './api'
 import { getCachedPackage, queueEvent } from './db'
-import { createLearningAttempt, getWorkedExampleById } from './learning'
+import { createLearningAttempt, getOrderedLearningSteps, getWorkedExampleById } from './learning'
 
 const fetchMock = vi.fn()
 
@@ -292,6 +292,25 @@ describe('submitAttempt queue boundary', () => {
 })
 
 describe('learning path data boundaries', () => {
+  it('orders learning steps by the contract order field without mutating API data', () => {
+    const steps = [
+      { id: 'step-3', order: 3, type: 'practice' as const, skillId: 'F11', questionIds: ['P_F11_001'] },
+      { id: 'step-1', order: 1, type: 'micro_explanation' as const, skillId: 'F11', contentId: 'EXP_F11_BASIC' },
+      { id: 'step-2', order: 2, type: 'worked_example' as const, skillId: 'F11', contentId: 'EXAMPLE_F11_001' },
+    ]
+
+    expect(getOrderedLearningSteps(steps).map(step => step.id)).toEqual([
+      'step-1',
+      'step-2',
+      'step-3',
+    ])
+    expect(steps.map(step => step.id)).toEqual([
+      'step-3',
+      'step-1',
+      'step-2',
+    ])
+  })
+
   it('reads worked examples and preserves the active question contract', () => {
     const learningPackage = {
       packageId: 'math-fractions-v1',
