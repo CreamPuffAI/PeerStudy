@@ -110,7 +110,7 @@ export function AIExplanation({ packageId, skillId, contentId, explanation }: AI
               {loading ? (
                 <>
                   <RefreshCw className="h-4 w-4 animate-spin" aria-hidden="true" />
-                  FPT AI đang tạo giải thích...
+                  AI đang tạo giải thích...
                 </>
               ) : (
                 <>
@@ -129,7 +129,7 @@ export function AIExplanation({ packageId, skillId, contentId, explanation }: AI
 
           {loading && (
             <p className="text-sm text-blue-800" role="status" aria-live="polite">
-              FPT AI đang tạo giải thích...
+              AI đang tạo giải thích...
             </p>
           )}
           {errorMessage && (
@@ -151,7 +151,7 @@ export function AIExplanation({ packageId, skillId, contentId, explanation }: AI
             {rewrite.generated && !rewrite.fallbackUsed && (
               <Badge variant="info" size="sm">
                 <Sparkles className="mr-1 h-3 w-3" aria-hidden="true" />
-                Được tạo bởi FPT AI
+                Được tạo bởi AI
               </Badge>
             )}
             {rewrite.fallbackUsed && (
