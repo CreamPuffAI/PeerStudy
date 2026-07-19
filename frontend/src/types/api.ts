@@ -11,6 +11,7 @@ export type Severity = 'low' | 'medium' | 'high'
 export type PriorityLevel = 'low' | 'medium' | 'high'
 export type SyncEventType = 'question_attempted' | 'learning_step_completed' | 'checkpoint_completed' | 'learning_path_completed'
 export type SyncRejectCode = 'INVALID_EVENT' | 'QUESTION_NOT_FOUND' | 'PACKAGE_VERSION_MISMATCH' | 'SESSION_NOT_FOUND' | 'STUDENT_NOT_FOUND'
+export type AIExplanationStyle = 'short' | 'step_by_step' | 'visual'
 
 export interface ApiSuccessResponse<T> {
   success: true
@@ -63,7 +64,7 @@ export interface RewriteExplanationRequest {
   packageId: string
   skillId: string
   contentId: string
-  style?: string
+  style?: AIExplanationStyle
   constraints?: AIContentConstraints
 }
 

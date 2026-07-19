@@ -7,7 +7,7 @@ vi.mock('./db', () => ({
   queueEvent: vi.fn(),
 }))
 
-import { generateDiagnosisHint, getOfflineDiagnosisHint, submitAttempt } from './api'
+import { generateDiagnosisHint, getOfflineDiagnosisHint, rewriteExplanation, submitAttempt } from './api'
 import { getCachedPackage, queueEvent } from './db'
 import { createLearningAttempt, getWorkedExampleById } from './learning'
 
@@ -123,6 +123,117 @@ describe('generateDiagnosisHint', () => {
 
     await expect(getOfflineDiagnosisHint('math-fractions-v1', 'F11'))
       .resolves.toBe('Tìm mẫu số chung trước. Sau đó quy đồng từng phân số.')
+  })
+})
+
+describe('rewriteExplanation', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubGlobal('fetch', fetchMock)
+    vi.stubGlobal('navigator', { onLine: true })
+  })
+
+  it('sends the contract URL, method, and approved request body', async () => {
+    fetchMock.mockResolvedValueOnce(response({
+      success: true,
+      data: {
+        id: 'EXP_F11_BASIC__step_by_step',
+        skillId: 'F11',
+        sourceContentId: 'EXP_F11_BASIC',
+        style: 'step_by_step',
+        content: 'Bước một: tìm mẫu số chung. Bước hai: quy đồng từng phân số.',
+        generated: true,
+        fallbackUsed: false,
+      },
+    }))
+
+    await rewriteExplanation({
+      packageId: 'math-fractions-v1',
+      skillId: 'F11',
+      contentId: 'EXP_F11_BASIC',
+      style: 'step_by_step',
+      constraints: { maxSentences: 2, maxWords: 40 },
+    })
+
+    expect(fetchMock.mock.calls[0][0]).toBe('http://localhost:8000/api/v1/ai/rewrite-explanation')
+    expect(fetchMock.mock.calls[0][1]).toMatchObject({
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    })
+    expect(JSON.parse(fetchMock.mock.calls[0][1].body)).toEqual({
+      packageId: 'math-fractions-v1',
+      skillId: 'F11',
+      contentId: 'EXP_F11_BASIC',
+      style: 'step_by_step',
+      constraints: { maxSentences: 2, maxWords: 40 },
+    })
+  })
+
+  it('returns generated and deterministic fallback responses without changing their flags', async () => {
+    fetchMock
+      .mockResolvedValueOnce(response({
+        success: true,
+        data: {
+          id: 'EXP_F11_BASIC__short',
+          skillId: 'F11',
+          sourceContentId: 'EXP_F11_BASIC',
+          style: 'short',
+          content: 'Tìm mẫu số chung trước.',
+          generated: true,
+          fallbackUsed: false,
+        },
+      }))
+      .mockResolvedValueOnce(response({
+        success: true,
+        data: {
+          id: 'EXP_F11_BASIC__visual',
+          skillId: 'F11',
+          sourceContentId: 'EXP_F11_BASIC',
+          style: 'visual',
+          content: 'Hãy tưởng tượng các phân số cùng đứng trên một mẫu số.',
+          generated: false,
+          fallbackUsed: true,
+        },
+      }))
+
+    const generated = await rewriteExplanation({
+      packageId: 'math-fractions-v1',
+      skillId: 'F11',
+      contentId: 'EXP_F11_BASIC',
+      style: 'short',
+    })
+    const fallback = await rewriteExplanation({
+      packageId: 'math-fractions-v1',
+      skillId: 'F11',
+      contentId: 'EXP_F11_BASIC',
+      style: 'visual',
+    })
+
+    expect(generated.generated).toBe(true)
+    expect(generated.fallbackUsed).toBe(false)
+    expect(fallback.generated).toBe(false)
+    expect(fallback.fallbackUsed).toBe(true)
+  })
+
+  it('surfaces the API error envelope for retry UI', async () => {
+    fetchMock.mockResolvedValueOnce(response({
+      success: false,
+      error: {
+        code: 'AI_CONTENT_ERROR',
+        message: 'Không có nội dung giải thích hợp lệ.',
+        details: { contentId: 'EXP_UNKNOWN' },
+      },
+    }, 422))
+
+    await expect(rewriteExplanation({
+      packageId: 'math-fractions-v1',
+      skillId: 'F11',
+      contentId: 'EXP_UNKNOWN',
+      style: 'short',
+    })).rejects.toMatchObject({
+      code: 'AI_CONTENT_ERROR',
+      status: 422,
+    })
   })
 })
 

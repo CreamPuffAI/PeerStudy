@@ -4,6 +4,7 @@ import type { LearningPath, LearningPackage, NextAction, Question, Explanation, 
 import { ApiError, submitAttempt } from '../../lib/api'
 import { getWorkedExampleById } from '../../lib/learning'
 import { QuestionCard } from './QuestionCard'
+import { AIExplanation } from './AIExplanation'
 import { Card, CardHeader } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { ProgressBar } from '../ui/ProgressBar'
@@ -189,6 +190,9 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
 
         {currentStep.type === 'micro_explanation' && currentStep.contentId && (
           <ExplanationStep
+            packageId={packageId}
+            skillId={currentStep.skillId}
+            contentId={currentStep.contentId}
             explanation={getExplanationById(currentStep.contentId)}
             onComplete={handleStepComplete}
           />
@@ -222,16 +226,27 @@ export function LearningPathView({ path, studentId, packageId, learningPackage, 
   )
 }
 
-function ExplanationStep({ explanation, onComplete }: { explanation?: Explanation; onComplete: () => void }) {
+function ExplanationStep({
+  packageId,
+  skillId,
+  contentId,
+  explanation,
+  onComplete,
+}: {
+  packageId: string
+  skillId: string
+  contentId: string
+  explanation?: Explanation
+  onComplete: () => void
+}) {
   return (
     <div className="space-y-4">
-      <div className="p-5 rounded-2xl bg-amber-50 border border-amber-100 text-slate-800 leading-relaxed">
-        <div className="flex items-center gap-2 mb-3 text-amber-700 font-semibold">
-          <Lightbulb className="w-5 h-5" />
-          Kiến thức cần nhớ
-        </div>
-        <p className="text-base">{explanation?.content ?? 'Nội dung giải thích'}</p>
-      </div>
+      <AIExplanation
+        packageId={packageId}
+        skillId={skillId}
+        contentId={contentId}
+        explanation={explanation}
+      />
       <Button onClick={onComplete}>
         Đã hiểu <ArrowRight className="w-4 h-4" />
       </Button>

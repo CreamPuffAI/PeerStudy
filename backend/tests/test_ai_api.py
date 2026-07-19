@@ -200,6 +200,50 @@ def test_diagnosis_hint_uses_only_completed_engine_diagnosis(
     assert "mastery" not in str(provider_payload).lower()
 
 
+def test_diagnosis_hint_without_skill_template_returns_verified_fallback(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        main,
+        "ai_content_service",
+        AIContentService(main.runtime_data["learning_package"], api_key=""),
+    )
+    main.diagnosis_sessions["diag-ai-f08"] = {
+        "id": "diag-ai-f08",
+        "status": "completed",
+        "triggerErrorPattern": "EQUIVALENT_FRACTION_MISCONCEPTION",
+        "diagnosis": {
+            "rootGap": {"skillId": "F08", "name": "Tạo phân số tương đương", "grade": 5},
+            "confidence": 0.82,
+            "classification": "knowledge_gap",
+            "evidence": [
+                {
+                    "type": "incorrect_diagnostic_answer",
+                    "skillId": "F08",
+                    "message": "Học sinh chưa chắc cách tạo phân số tương đương.",
+                }
+            ],
+        },
+    }
+
+    response = client.post(
+        "/api/v1/ai/generate-diagnosis-hint",
+        json={
+            "packageId": "math-fractions-v1",
+            "diagnosisSessionId": "diag-ai-f08",
+            "style": "short",
+            "constraints": {"maxSentences": 2, "maxWords": 30},
+        },
+    )
+
+    assert response.status_code == 200
+    data = response.json()["data"]
+    assert data["skillId"] == "F08"
+    assert data["generated"] is False
+    assert data["fallbackUsed"] is True
+    assert "phân số tương đương" in data["message"].lower()
+
+
 def test_invalid_provider_output_falls_back_without_breaking_response(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:

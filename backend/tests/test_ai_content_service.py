@@ -289,6 +289,37 @@ def test_hint_fallback_respects_constraints() -> None:
     assert client.calls[0][0] == "generate_hint_from_diagnosis"
 
 
+def test_hint_without_skill_template_uses_verified_skill_explanation() -> None:
+    ai = service(api_key="")
+    source = ai.verified_diagnosis(
+        "diag-f08-fallback",
+        skill_id="F08",
+        confidence=0.82,
+        root_gap_skill_id="F08",
+        evidence=[
+            {
+                "type": "incorrect_diagnostic_answer",
+                "skillId": "F08",
+                "message": "Học sinh chưa chắc cách tạo phân số tương đương.",
+            }
+        ],
+    )
+
+    result = ai.generate_hint_from_diagnosis(
+        GenerateHintFromDiagnosisRequest(
+            skillId="F08",
+            sourceContent=source,
+            style="short",
+            constraints=ContentConstraints(maxWords=30, maxSentences=2),
+        )
+    )
+
+    assert result.generated is False
+    assert result.fallbackUsed is True
+    assert result.skillId == "F08"
+    assert "phân số tương đương" in result.message.lower()
+
+
 def test_tampered_source_is_rejected_before_provider_call() -> None:
     ai = service()
     source = ai.verified_explanation("EXP_F11_BASIC").model_copy(

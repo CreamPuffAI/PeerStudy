@@ -419,12 +419,25 @@ class AIContentService:
                 pass
 
         fallback_message = (template or {}).get("fallbackMessage")
+        fallback_content_id = request.sourceContent.contentId
+        if not fallback_message:
+            verified_explanation = next(
+                (
+                    explanation
+                    for explanation in self._explanations.values()
+                    if explanation["skillId"] == request.skillId
+                ),
+                None,
+            )
+            if verified_explanation is not None:
+                fallback_message = verified_explanation["content"]
+                fallback_content_id = verified_explanation["id"]
         if not fallback_message:
             raise AIContentError("Không có hint fallback hợp lệ.")
         message = self._post_process_text(
             fallback_message,
             request.constraints,
-            content_id=request.sourceContent.contentId,
+            content_id=fallback_content_id,
             kind="hint",
         )
         return HintResult(

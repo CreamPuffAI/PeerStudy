@@ -157,6 +157,10 @@ export async function generateDiagnosisHint(
 export async function rewriteExplanation(
   request: RewriteExplanationRequest,
 ): Promise<RewriteExplanationResponse> {
+  if (isOffline()) {
+    throw new ApiError('Đang offline. Không thể gọi dịch vụ AI.', 'OFFLINE')
+  }
+
   return apiFetch<RewriteExplanationResponse>('/api/v1/ai/rewrite-explanation', {
     method: 'POST',
     body: JSON.stringify({
@@ -164,7 +168,7 @@ export async function rewriteExplanation(
       skillId: request.skillId,
       contentId: request.contentId,
       style: request.style ?? 'short',
-      constraints: request.constraints ?? {},
+      constraints: request.constraints ?? { maxSentences: 2, maxWords: 40 },
     }),
   })
 }
